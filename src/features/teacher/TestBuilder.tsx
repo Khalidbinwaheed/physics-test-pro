@@ -185,9 +185,29 @@ export function TestBuilder({ onAssignTest }: TestBuilderProps) {
         </button>
       </div>
 
-      {/* Tests Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {tests.map((t) => (
+      {/* Tests Grid / Empty State */}
+      {tests.length === 0 ? (
+        <div className="p-12 text-center neu-raised rounded-3xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center mx-auto text-primary">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">No Examinations Created Yet</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Construct examinations with custom time limits, passing scores, negative marking rules, and curated MCQs.
+            </p>
+          </div>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center gap-2 px-4 py-2.5 neu-btn-primary rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create First Examination</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tests.map((t) => (
           <div
             key={t.id}
             className="p-6 rounded-2xl neu-raised hover:neu-raised-lg transition-all space-y-4"
@@ -283,6 +303,7 @@ export function TestBuilder({ onAssignTest }: TestBuilderProps) {
           </div>
         ))}
       </div>
+      )}
 
       {/* CREATE / EDIT TEST MODAL */}
       {showModal && (

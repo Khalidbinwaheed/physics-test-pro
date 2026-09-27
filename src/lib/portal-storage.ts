@@ -20,6 +20,7 @@ import {
   INITIAL_TESTS,
 } from "./portal-seed-data";
 import { normalizeLoginId, studentEmailFor } from "./login-id";
+import { supabaseService } from "./supabase-service";
 
 export interface TeacherUser {
   id: string;
@@ -37,47 +38,7 @@ const DEFAULT_TEACHER: TeacherUser = {
   passwordHash: "AdminPass123!",
 };
 
-export const INITIAL_ASSIGNMENTS: TestAssignmentItem[] = [
-  {
-    id: "asg-1",
-    test_id: "test-1",
-    test_title: "Chapter 3: Motion and Force Comprehensive Examination",
-    student_id: "stu-1",
-    student_login_id: "PHY-001",
-    student_name: "Muhammad Ali",
-    assigned_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-    available_from: new Date(Date.now() - 86400000).toISOString(),
-    available_until: new Date(Date.now() + 7 * 86400000).toISOString(),
-    max_attempts: 2,
-    status: "assigned",
-  },
-  {
-    id: "asg-2",
-    test_id: "test-1",
-    test_title: "Chapter 3: Motion and Force Comprehensive Examination",
-    student_id: "stu-2",
-    student_login_id: "PHY-002",
-    student_name: "Sara Ahmed",
-    assigned_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-    available_from: new Date(Date.now() - 86400000).toISOString(),
-    available_until: new Date(Date.now() + 7 * 86400000).toISOString(),
-    max_attempts: 2,
-    status: "assigned",
-  },
-  {
-    id: "asg-3",
-    test_id: "test-2",
-    test_title: "Physics Fundamentals: Work, Energy & Electricity",
-    student_id: "stu-1",
-    student_login_id: "PHY-001",
-    student_name: "Muhammad Ali",
-    assigned_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    available_from: new Date(Date.now() - 86400000).toISOString(),
-    available_until: new Date(Date.now() + 14 * 86400000).toISOString(),
-    max_attempts: 1,
-    status: "assigned",
-  },
-];
+export const INITIAL_ASSIGNMENTS: TestAssignmentItem[] = [];
 
 class PortalStorage {
   private teacher: TeacherUser = { ...DEFAULT_TEACHER };
@@ -98,8 +59,89 @@ class PortalStorage {
     this.init();
   }
 
+  private persist() {
+    if (typeof window === "undefined" || !window.localStorage) return;
+    try {
+      const data = {
+        classes: this.classes,
+        students: this.students,
+        chapters: this.chapters,
+        topics: this.topics,
+        mcqs: this.mcqs,
+        mcqVersions: this.mcqVersions,
+        tests: this.tests,
+        assignments: this.assignments,
+        attempts: this.attempts,
+        results: this.results,
+        auditLogs: this.auditLogs,
+      };
+      localStorage.setItem("physics_portal_state_v2", JSON.stringify(data));
+    } catch {
+      // Ignore storage quota errors
+    }
+  }
+
+  private async syncWithSupabase() {
+    if (typeof window === "undefined") return;
+    try {
+      const isConnected = await supabaseService.testConnection();
+      if (!isConnected) return;
+
+      const [sbClasses, sbChapters, sbTopics, sbMCQs, sbTests, sbStudents] = await Promise.all([
+        supabaseService.getClasses(),
+        supabaseService.getChapters(),
+        supabaseService.getTopics(),
+        supabaseService.getMCQs(),
+        supabaseService.getTests(),
+        supabaseService.getStudents(),
+      ]);
+
+      if (sbClasses.length > 0) this.classes = sbClasses;
+      if (sbChapters.length > 0) this.chapters = sbChapters;
+      if (sbTopics.length > 0) this.topics = sbTopics;
+      if (sbMCQs.length > 0) this.mcqs = sbMCQs;
+      if (sbTests.length > 0) this.tests = sbTests;
+      if (sbStudents.length > 0) {
+        const existingMap = new Map(this.students.map((s) => [s.id, s.passwordHash]));
+        this.students = sbStudents.map((s) => ({
+          ...s,
+          passwordHash: existingMap.get(s.id) || "StudentPass123!",
+        }));
+      }
+      this.persist();
+    } catch {
+      // Supabase migration may not yet be applied or network offline
+    }
+  }
+
   private init() {
     if (this.initialized) return;
+
+    if (typeof window !== "undefined" && window.localStorage) {
+      try {
+        const saved = localStorage.getItem("physics_portal_state_v2");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          this.classes = parsed.classes || [];
+          this.students = parsed.students || [];
+          this.chapters = parsed.chapters || [];
+          this.topics = parsed.topics || [];
+          this.mcqs = parsed.mcqs || [];
+          this.mcqVersions = parsed.mcqVersions || {};
+          this.tests = parsed.tests || [];
+          this.assignments = parsed.assignments || [];
+          this.attempts = parsed.attempts || [];
+          this.results = parsed.results || [];
+          this.auditLogs = parsed.auditLogs || [];
+          this.initialized = true;
+          this.syncWithSupabase();
+          return;
+        }
+      } catch {
+        // Fallback to initial empty collections
+      }
+    }
+
     this.classes = [...INITIAL_CLASSES];
     this.students = [...INITIAL_STUDENTS];
     this.chapters = [...INITIAL_CHAPTERS];
@@ -116,10 +158,11 @@ class PortalStorage {
     this.audit({
       action: "system_init",
       resource: "system",
-      meta: { message: "Physics Examination Portal initialized with standard curriculum data" },
+      meta: { message: "Physics Examination Portal initialized" },
     });
 
     this.initialized = true;
+    this.syncWithSupabase();
   }
 
   // --- AUDIT LOGS ---
@@ -1144,11 +1187,11 @@ class PortalStorage {
     });
 
     const chapterPerformance = Object.values(chapterMap)
-      .filter((c) => c.count > 0 || true)
+      .filter((c) => c.count > 0)
       .slice(0, 6)
       .map((c) => ({
         chapter: c.name.length > 18 ? c.name.slice(0, 16) + "..." : c.name,
-        average: c.count > 0 ? Math.round(c.totalPct / c.count) : 75 + Math.floor(Math.random() * 15),
+        average: Math.round(c.totalPct / c.count),
       }));
 
     // Score distribution
@@ -1187,12 +1230,19 @@ class PortalStorage {
           ) / 10
         : 0;
 
-    const chapterPerformance = [
-      { chapter: "Motion and Force", score: 85 },
-      { chapter: "Work and Energy", score: 72 },
-      { chapter: "Waves", score: 91 },
-      { chapter: "Electrostatics", score: 78 },
-    ];
+    const studentChapterMap = new Map<string, { totalPct: number; count: number }>();
+    studentResults.forEach((r) => {
+      const chName = r.chapter_name || "General Physics";
+      const cur = studentChapterMap.get(chName) || { totalPct: 0, count: 0 };
+      cur.totalPct += r.percentage;
+      cur.count += 1;
+      studentChapterMap.set(chName, cur);
+    });
+
+    const chapterPerformance = Array.from(studentChapterMap.entries()).map(([chapter, d]) => ({
+      chapter,
+      score: Math.round(d.totalPct / d.count),
+    }));
 
     return {
       assignedTests,

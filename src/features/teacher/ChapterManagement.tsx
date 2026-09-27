@@ -124,10 +124,30 @@ export function ChapterManagement() {
         </button>
       </div>
 
-      {/* Chapters Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {chapters.map((ch) => {
-          const chapterTopics = topics.filter((t) => t.chapter_id === ch.id);
+      {/* Chapters Grid / Empty State */}
+      {chapters.length === 0 ? (
+        <div className="p-12 text-center neu-raised rounded-3xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center mx-auto text-primary">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">No Chapters Added Yet</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Create curriculum chapters (e.g. Chapter 1: Measurements, Chapter 2: Vectors) to organize your Physics question bank and tests.
+            </p>
+          </div>
+          <button
+            onClick={openCreateChapter}
+            className="inline-flex items-center gap-2 px-4 py-2.5 neu-btn-primary rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add First Chapter</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {chapters.map((ch) => {
+            const chapterTopics = topics.filter((t) => t.chapter_id === ch.id);
 
           return (
             <div
@@ -193,6 +213,7 @@ export function ChapterManagement() {
           );
         })}
       </div>
+      )}
 
       {/* CREATE / EDIT CHAPTER MODAL */}
       {showChapterModal && (

@@ -145,49 +145,57 @@ export function TeacherDashboard({ onNavigateTab }: TeacherDashboardProps) {
             </span>
           </div>
 
-          <div className="h-64 w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analytics.chapterPerformance} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                <XAxis
-                  dataKey="chapter"
-                  stroke="currentColor"
-                  className="text-muted-foreground"
-                  fontSize={11}
-                  tickLine={false}
-                  interval={0}
-                  angle={-15}
-                  textAnchor="end"
-                />
-                <YAxis
-                  stroke="currentColor"
-                  className="text-muted-foreground"
-                  fontSize={11}
-                  domain={[0, 100]}
-                  tickLine={false}
-                  unit="%"
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--neu-surface)",
-                    borderColor: "var(--neu-border)",
-                    boxShadow: "6px 6px 16px var(--neu-shadow-dark), -6px -6px 16px var(--neu-shadow-light)",
-                    borderRadius: "16px",
-                    color: "var(--foreground)",
-                    fontSize: "12px",
-                  }}
-                  formatter={(val: any) => [`${val}%`, "Average Score"]}
-                />
-                <Bar dataKey="average" radius={[8, 8, 0, 0]}>
-                  {analytics.chapterPerformance.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.average >= 70 ? "#4f46e5" : entry.average >= 50 ? "#f59e0b" : "#ef4444"}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {analytics.chapterPerformance.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center neu-inset rounded-2xl p-6 text-center text-muted-foreground">
+              <TrendingUp className="w-8 h-8 opacity-40 mb-2 text-primary" />
+              <p className="text-sm font-semibold text-foreground">No Chapter Assessment Data Yet</p>
+              <p className="text-xs max-w-sm mt-1">Once students complete tests, real chapter-by-chapter mastery analytics and distributions will automatically display here.</p>
+            </div>
+          ) : (
+            <div className="h-64 w-full pt-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analytics.chapterPerformance} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                  <XAxis
+                    dataKey="chapter"
+                    stroke="currentColor"
+                    className="text-muted-foreground"
+                    fontSize={11}
+                    tickLine={false}
+                    interval={0}
+                    angle={-15}
+                    textAnchor="end"
+                  />
+                  <YAxis
+                    stroke="currentColor"
+                    className="text-muted-foreground"
+                    fontSize={11}
+                    domain={[0, 100]}
+                    tickLine={false}
+                    unit="%"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--neu-surface)",
+                      borderColor: "var(--neu-border)",
+                      boxShadow: "6px 6px 16px var(--neu-shadow-dark), -6px -6px 16px var(--neu-shadow-light)",
+                      borderRadius: "16px",
+                      color: "var(--foreground)",
+                      fontSize: "12px",
+                    }}
+                    formatter={(val: any) => [`${val}%`, "Average Score"]}
+                  />
+                  <Bar dataKey="average" radius={[8, 8, 0, 0]}>
+                    {analytics.chapterPerformance.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.average >= 70 ? "#4f46e5" : entry.average >= 50 ? "#f59e0b" : "#ef4444"}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </div>
 
         {/* Score Distribution Chart */}

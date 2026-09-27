@@ -55,33 +55,54 @@ export function ClassManagement() {
         </button>
       </div>
 
-      {/* Classes Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {classes.map((c) => (
-          <div
-            key={c.id}
-            className="p-6 rounded-2xl neu-raised hover:neu-raised-lg space-y-3 transition-all"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-primary uppercase">
-                Section {c.section}
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase neu-inset-sm text-emerald-500 font-bold">
-                {c.status}
-              </span>
-            </div>
-
-            <h3 className="text-xl font-bold text-foreground tracking-tight">{c.name}</h3>
-
-            <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs font-mono text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>{c.student_count || 0} Students enrolled</span>
-              </span>
-            </div>
+      {/* Classes Grid / Empty State */}
+      {classes.length === 0 ? (
+        <div className="p-12 text-center neu-raised rounded-3xl space-y-4">
+          <div className="w-12 h-12 rounded-2xl neu-inset flex items-center justify-center mx-auto text-primary">
+            <Users className="w-6 h-6" />
           </div>
-        ))}
-      </div>
+          <div>
+            <h3 className="text-base font-bold text-foreground">No Classes Created Yet</h3>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Classes help organize your students into cohorts (e.g. Class 11 - Section A). Create your first class to begin enrolling students.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 neu-btn-primary rounded-xl text-xs font-semibold cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create First Class</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {classes.map((c) => (
+            <div
+              key={c.id}
+              className="p-6 rounded-2xl neu-raised hover:neu-raised-lg space-y-3 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-bold text-primary uppercase">
+                  Section {c.section}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase neu-inset-sm text-emerald-500 font-bold">
+                  {c.status}
+                </span>
+              </div>
+
+              <h3 className="text-xl font-bold text-foreground tracking-tight">{c.name}</h3>
+
+              <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs font-mono text-muted-foreground">
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-muted-foreground" />
+                  <span>{c.student_count || 0} Students enrolled</span>
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* CREATE CLASS MODAL */}
       {showModal && (

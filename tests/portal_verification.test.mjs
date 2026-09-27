@@ -16,10 +16,11 @@ async function runTests() {
 
   // 2. Student Management: Create student & temporary password
   console.log("2. Testing Student Account Creation & Temporary Password...");
+  const testClass = portalStorage.createClass("Physics Class 12", "A");
   const newStudentData = {
     login_id: "PHY-TEST-99",
     full_name: "Test Physics Scholar",
-    class_id: "cls-1",
+    class_id: testClass.id,
     roll_number: "999",
   };
   const created = portalStorage.createStudent(newStudentData);
@@ -49,9 +50,30 @@ async function runTests() {
 
   // 4. MCQ Snapshot Versioning
   console.log("4. Testing MCQ Snapshotting & Versioning...");
+  const mcq1 = portalStorage.createMCQ({
+    question: "SI unit of force is?",
+    option_a: "Joule",
+    option_b: "Newton",
+    option_c: "Watt",
+    option_d: "Pascal",
+    correct_answer: "B",
+    marks: 1,
+    negative_marks: 0.25,
+    status: "active",
+  });
+  const mcq2 = portalStorage.createMCQ({
+    question: "Rate of change of momentum equals?",
+    option_a: "Velocity",
+    option_b: "Applied Force",
+    option_c: "Torque",
+    option_d: "Power",
+    correct_answer: "B",
+    marks: 1,
+    negative_marks: 0.25,
+    status: "active",
+  });
+
   const createdMCQ = portalStorage.createMCQ({
-    chapter_id: "ch-3",
-    topic_id: "top-1",
     question: "What is kinetic energy formula? $E_k = \\frac{1}{2}mv^2$",
     option_a: "$\\frac{1}{2}mv^2$",
     option_b: "$mv$",
@@ -91,7 +113,7 @@ async function runTests() {
     show_correct_answers: true,
     show_explanations: true,
     status: "active",
-    question_ids: ["mcq-1", "mcq-2", createdMCQ.id],
+    question_ids: [mcq1.id, mcq2.id, createdMCQ.id],
   });
   assert.strictEqual(newTest.question_count, 3, "Test must contain 3 questions");
 

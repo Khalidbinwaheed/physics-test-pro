@@ -220,38 +220,15 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                   )}
                 </button>
 
-                {/* Quick Demo Credentials helper */}
+                {/* Instructions */}
                 <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-2 font-semibold">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-1.5 font-semibold">
                     <KeyRound className="w-3.5 h-3.5 text-primary" />
-                    <span>Quick Demo Credentials (Click to fill)</span>
+                    <span>Student Access Info</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStudentLoginId("PHY-001");
-                        setStudentPassword("StudentPass123!");
-                        setStudentError("");
-                      }}
-                      className="p-2.5 rounded-xl neu-btn-interactive text-left transition-all cursor-pointer"
-                    >
-                      <div className="font-mono text-primary font-bold">PHY-001</div>
-                      <div className="text-[10px] text-muted-foreground">Muhammad Ali</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setStudentLoginId("PHY-002");
-                        setStudentPassword("StudentPass123!");
-                        setStudentError("");
-                      }}
-                      className="p-2.5 rounded-xl neu-btn-interactive text-left transition-all cursor-pointer"
-                    >
-                      <div className="font-mono text-primary font-bold">PHY-002</div>
-                      <div className="text-[10px] text-muted-foreground">Sara Ahmed</div>
-                    </button>
-                  </div>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    Your unique Student Login ID and temporary password are provided by your physics instructor. First-time sign-ins require changing your password.
+                  </p>
                 </div>
               </form>
             )}
@@ -326,29 +303,15 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                   )}
                 </button>
 
-                {/* Quick Demo Credentials helper */}
+                {/* Instructor Portal Info */}
                 <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-2 font-semibold">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-1.5 font-semibold">
                     <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Instructor Credentials (Click to fill)</span>
+                    <span>Administrator Credentials</span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTeacherEmail("teacher@physlab.local");
-                      setTeacherPassword("AdminPass123!");
-                      setTeacherError("");
-                    }}
-                    className="w-full p-2.5 rounded-xl neu-btn-interactive text-left transition-all flex items-center justify-between cursor-pointer"
-                  >
-                    <div>
-                      <div className="font-mono text-emerald-500 font-bold">teacher@physlab.local</div>
-                      <div className="text-[10px] text-muted-foreground">Prof. Khalid Mehmood</div>
-                    </div>
-                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-md neu-inset-sm">
-                      Auto-fill
-                    </span>
-                  </button>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    Sign in with your instructor email and secure password configured in your Supabase database or portal settings. Default initial admin: <code className="font-mono text-emerald-500">teacher@physlab.local</code>.
+                  </p>
                 </div>
               </form>
             )}

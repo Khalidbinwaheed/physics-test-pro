@@ -173,22 +173,28 @@ export function StudentDashboard({ onStartExam, onViewResult, onNavigateTab }: S
           </div>
 
           <div className="space-y-3 font-sans">
-            {analytics.chapterPerformance.map((item, idx) => (
-              <div key={idx} className="p-3.5 rounded-xl neu-inset space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-foreground">{item.chapter}</span>
-                  <span className="font-mono font-bold text-primary">{item.score}%</span>
+            {analytics.chapterPerformance.length === 0 ? (
+              <p className="text-muted-foreground text-xs py-8 text-center font-mono neu-inset rounded-xl">
+                No chapter assessment records available yet.
+              </p>
+            ) : (
+              analytics.chapterPerformance.map((item, idx) => (
+                <div key={idx} className="p-3.5 rounded-xl neu-inset space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-foreground">{item.chapter}</span>
+                    <span className="font-mono font-bold text-primary">{item.score}%</span>
+                  </div>
+                  <div className="w-full h-2.5 neu-inset-sm rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        item.score >= 80 ? "bg-emerald-500" : item.score >= 60 ? "bg-primary" : "bg-amber-500"
+                      }`}
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full h-2.5 neu-inset-sm rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      item.score >= 80 ? "bg-emerald-500" : item.score >= 60 ? "bg-primary" : "bg-amber-500"
-                    }`}
-                    style={{ width: `${item.score}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
