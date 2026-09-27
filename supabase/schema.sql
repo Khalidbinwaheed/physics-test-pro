@@ -15,7 +15,11 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ============================================================================
 DO $$ BEGIN
   CREATE TYPE public.app_role AS ENUM ('super_admin', 'admin', 'teacher', 'student');
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+EXCEPTION WHEN duplicate_object THEN
+  BEGIN
+    ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'super_admin' BEFORE 'admin';
+  EXCEPTION WHEN duplicate_object THEN NULL; END;
+END $$;
 
 DO $$ BEGIN
   CREATE TYPE public.account_status AS ENUM ('active', 'disabled', 'archived');
@@ -272,8 +276,10 @@ CREATE TABLE IF NOT EXISTS public.login_attempts (
 -- 4. PERFORMANCE INDEXES
 -- ============================================================================
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_role_status ON public.profiles(role, status);
 CREATE INDEX IF NOT EXISTS idx_profiles_class ON public.profiles(class_id);
 CREATE INDEX IF NOT EXISTS idx_profiles_login_id ON public.profiles(login_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON public.user_roles(user_id);
 CREATE INDEX IF NOT EXISTS idx_topics_chapter ON public.topics(chapter_id);
 CREATE INDEX IF NOT EXISTS idx_mcqs_chapter ON public.mcqs(chapter_id);
 CREATE INDEX IF NOT EXISTS idx_mcqs_topic ON public.mcqs(topic_id);
@@ -282,6 +288,7 @@ CREATE INDEX IF NOT EXISTS idx_mcqs_difficulty ON public.mcqs(difficulty);
 CREATE INDEX IF NOT EXISTS idx_tests_status ON public.tests(status);
 CREATE INDEX IF NOT EXISTS idx_tests_chapter ON public.tests(chapter_id);
 CREATE INDEX IF NOT EXISTS idx_test_questions_test ON public.test_questions(test_id);
+CREATE INDEX IF NOT EXISTS idx_test_questions_mcq ON public.test_questions(mcq_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_student ON public.test_assignments(student_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_test ON public.test_assignments(test_id);
 CREATE INDEX IF NOT EXISTS idx_attempts_student ON public.attempts(student_id);
@@ -386,6 +393,87 @@ BEGIN
 END;
 $$;
 
+-- Function for Admin/Super Admin to create a teacher
+CREATE OR REPLACE FUNCTION public.admin_create_teacher(
+  p_full_name text,
+  p_login_id text,
+  p_email text,
+  p_password text DEFAULT 'TeacherPass123!',
+  p_phone text DEFAULT NULL
+)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
+DECLARE
+  v_caller uuid := auth.uid();
+  v_profile public.profiles%ROWTYPE;
+BEGIN
+  IF current_user <> 'postgres' AND (SELECT auth.role()) <> 'service_role' THEN
+    IF NOT public.is_admin(v_caller) THEN
+      RAISE EXCEPTION 'Access Denied: Only administrators can create teacher accounts.';
+    END IF;
+  END IF;
+
+  INSERT INTO public.profiles (
+    role, full_name, login_id, email, phone, password_hash, status, force_password_change, created_by
+  ) VALUES (
+    'teacher', trim(p_full_name), upper(trim(p_login_id)), lower(trim(p_email)), p_phone, p_password, 'active', true, v_caller
+  ) RETURNING * INTO v_profile;
+
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (v_profile.id, 'teacher')
+  ON CONFLICT (user_id, role) DO NOTHING;
+
+  INSERT INTO public.audit_logs (user_id, actor_label, action, resource, resource_id, meta)
+  VALUES (v_caller, 'Administrator', 'teacher_created', 'profiles', v_profile.id::text, jsonb_build_object('login_id', v_profile.login_id));
+
+  RETURN jsonb_build_object('success', true, 'teacher', row_to_json(v_profile));
+END;
+$$;
+
+-- Function for Admin/Super Admin to create a student
+CREATE OR REPLACE FUNCTION public.admin_create_student(
+  p_login_id text,
+  p_full_name text,
+  p_class_id uuid DEFAULT NULL,
+  p_roll_number text DEFAULT NULL,
+  p_email text DEFAULT NULL,
+  p_phone text DEFAULT NULL,
+  p_temporary_password text DEFAULT NULL
+)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
+DECLARE
+  v_caller uuid := auth.uid();
+  v_password text;
+  v_profile public.profiles%ROWTYPE;
+BEGIN
+  IF current_user <> 'postgres' AND (SELECT auth.role()) <> 'service_role' THEN
+    IF NOT public.is_admin(v_caller) THEN
+      RAISE EXCEPTION 'Access Denied: Only administrators can create student accounts.';
+    END IF;
+  END IF;
+
+  IF p_temporary_password IS NULL OR length(trim(p_temporary_password)) = 0 THEN
+    v_password := 'PHY-' || upper(substr(md5(random()::text), 1, 5)) || '#' || floor(100 + random() * 899)::text;
+  ELSE
+    v_password := p_temporary_password;
+  END IF;
+
+  INSERT INTO public.profiles (
+    role, full_name, login_id, email, phone, class_id, roll_number, password_hash, status, force_password_change, created_by
+  ) VALUES (
+    'student', trim(p_full_name), upper(trim(p_login_id)), p_email, p_phone, p_class_id, p_roll_number, v_password, 'active', true, v_caller
+  ) RETURNING * INTO v_profile;
+
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (v_profile.id, 'student')
+  ON CONFLICT (user_id, role) DO NOTHING;
+
+  INSERT INTO public.audit_logs (user_id, actor_label, action, resource, resource_id, meta)
+  VALUES (v_caller, 'Administrator', 'student_created', 'profiles', v_profile.id::text, jsonb_build_object('login_id', v_profile.login_id));
+
+  RETURN jsonb_build_object('success', true, 'student', row_to_json(v_profile), 'temporary_password', v_password);
+END;
+$$;
+
 -- Function to safely authenticate a student via Login ID and password
 CREATE OR REPLACE FUNCTION public.authenticate_student(p_login_id text, p_password text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
@@ -442,19 +530,16 @@ ALTER TABLE public.login_attempts ENABLE ROW LEVEL SECURITY;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated, anon;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated, anon;
 
--- Allow anonymous access for student login authentication & basic reads
-GRANT SELECT ON public.classes TO anon;
-GRANT SELECT ON public.chapters TO anon;
-GRANT SELECT ON public.topics TO anon;
-GRANT SELECT ON public.profiles TO anon;
-GRANT SELECT, INSERT, UPDATE ON public.login_attempts TO anon;
 GRANT EXECUTE ON FUNCTION public.authenticate_student TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.is_super_admin TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.is_teacher_or_admin TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.make_super_admin TO authenticated;
+GRANT EXECUTE ON FUNCTION public.admin_create_teacher TO authenticated;
+GRANT EXECUTE ON FUNCTION public.admin_create_student TO authenticated;
 
 -- ----------------------------------------------------------------------------
 -- STRICT PRIVACY POLICIES FOR PROFILES
@@ -519,20 +604,37 @@ USING (
 -- ----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "user_roles_select_policy" ON public.user_roles;
 CREATE POLICY "user_roles_select_policy" ON public.user_roles
-FOR SELECT TO authenticated
+FOR SELECT TO authenticated, anon
 USING (
   public.is_admin((SELECT auth.uid()))
   OR user_id = (SELECT auth.uid())
 );
 
 DROP POLICY IF EXISTS "user_roles_manage_policy" ON public.user_roles;
-CREATE POLICY "user_roles_manage_policy" ON public.user_roles
-FOR ALL TO authenticated
+DROP POLICY IF EXISTS "user_roles_insert_policy" ON public.user_roles;
+CREATE POLICY "user_roles_insert_policy" ON public.user_roles
+FOR INSERT TO authenticated
+WITH CHECK (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+);
+
+DROP POLICY IF EXISTS "user_roles_update_policy" ON public.user_roles;
+CREATE POLICY "user_roles_update_policy" ON public.user_roles
+FOR UPDATE TO authenticated
 USING (
   public.is_super_admin((SELECT auth.uid()))
   OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
 )
 WITH CHECK (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+);
+
+DROP POLICY IF EXISTS "user_roles_delete_policy" ON public.user_roles;
+CREATE POLICY "user_roles_delete_policy" ON public.user_roles
+FOR DELETE TO authenticated
+USING (
   public.is_super_admin((SELECT auth.uid()))
   OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
 );
