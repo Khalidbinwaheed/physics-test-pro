@@ -18,10 +18,16 @@ import {
   Edit2,
   X,
   AlertTriangle,
+  Lock,
+  Shield,
 } from "lucide-react";
+import { useAuth } from "@/features/auth/auth-context";
 import { toast } from "sonner";
 
 export function StudentManagement() {
+  const { isAdmin, isSuperAdmin, teacher } = useAuth();
+  const canAddStudent = isAdmin || isSuperAdmin;
+
   const [students, setStudents] = useState<StudentProfile[]>(portalStorage.getStudents());
   const [classes] = useState<ClassItem[]>(portalStorage.getClasses());
 
@@ -94,13 +100,21 @@ export function StudentManagement() {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canAddStudent) {
+      toast.error("Privacy Restriction: Only administrators and super administrators have permission to register students.");
+      return;
+    }
+
     if (!formData.login_id.trim() || !formData.full_name.trim()) {
       toast.error("Student Login ID and Full Name are required.");
       return;
     }
 
     try {
-      const res = portalStorage.createStudent(formData);
+      const res = portalStorage.createStudent({
+        ...formData,
+        actorRole: teacher?.role,
+      });
       toast.success(`Student ${res.student.login_id} created successfully!`);
       setShowCreateModal(false);
       setFormData({
@@ -212,13 +226,20 @@ export function StudentManagement() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="flex items-center justify-center gap-2 neu-btn-primary px-4 py-2.5 rounded-xl font-semibold text-sm cursor-pointer"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Add New Student</span>
-        </button>
+        {canAddStudent ? (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center justify-center gap-2 neu-btn-primary px-4 py-2.5 rounded-xl font-semibold text-sm cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Add New Student</span>
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl neu-inset text-xs font-mono text-amber-500 border border-amber-500/20">
+            <Lock className="w-3.5 h-3.5 text-amber-500" />
+            <span>Admin-Only Student Registration</span>
+          </div>
+        )}
       </div>
 
       {/* Filter and Search Bar */}

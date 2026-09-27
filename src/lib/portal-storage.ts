@@ -26,11 +26,27 @@ export interface TeacherUser {
   id: string;
   email: string;
   full_name: string;
-  role: "teacher" | "admin";
+  role: "super_admin" | "admin" | "teacher";
   passwordHash: string;
 }
 
-const DEFAULT_TEACHER: TeacherUser = {
+export const DEFAULT_SUPER_ADMIN: TeacherUser = {
+  id: "sa-1",
+  email: "superadmin@physlab.local",
+  full_name: "Super Administrator",
+  role: "super_admin",
+  passwordHash: "SuperAdminPass123!",
+};
+
+export const DEFAULT_ADMIN: TeacherUser = {
+  id: "adm-1",
+  email: "admin@physlab.local",
+  full_name: "School Examination Admin",
+  role: "admin",
+  passwordHash: "AdminPass123!",
+};
+
+export const DEFAULT_TEACHER: TeacherUser = {
   id: "tea-1",
   email: "teacher@physlab.local",
   full_name: "Prof. Khalid Mehmood",
@@ -41,7 +57,12 @@ const DEFAULT_TEACHER: TeacherUser = {
 export const INITIAL_ASSIGNMENTS: TestAssignmentItem[] = [];
 
 class PortalStorage {
-  private teacher: TeacherUser = { ...DEFAULT_TEACHER };
+  private staffUsers: TeacherUser[] = [
+    { ...DEFAULT_SUPER_ADMIN },
+    { ...DEFAULT_ADMIN },
+    { ...DEFAULT_TEACHER },
+  ];
+  private teacher: TeacherUser = { ...DEFAULT_SUPER_ADMIN };
   private students: (StudentProfile & { passwordHash: string })[] = [];
   private classes: ClassItem[] = [];
   private chapters: ChapterItem[] = [];
@@ -193,24 +214,38 @@ class PortalStorage {
     return [...this.auditLogs];
   }
 
+  setCurrentStaff(user: TeacherUser) {
+    this.teacher = user;
+  }
+
   // --- AUTHENTICATION ---
   authenticateTeacher(emailOrUsername: string, pass: string): { success: boolean; user?: TeacherUser; error?: string } {
     const clean = emailOrUsername.trim().toLowerCase();
-    if (
-      (clean === this.teacher.email.toLowerCase() || clean === "admin" || clean === "teacher") &&
-      pass === this.teacher.passwordHash
-    ) {
+
+    const matched = this.staffUsers.find((s) => {
+      const sEmail = s.email.toLowerCase();
+      if (sEmail === clean) return true;
+      if (s.role === "super_admin" && (clean === "superadmin" || clean === "super_admin" || clean === "superadmin-01")) return true;
+      if (s.role === "admin" && (clean === "admin" || clean === "admin-01")) return true;
+      if (s.role === "teacher" && (clean === "teacher" || clean === "teacher-01")) return true;
+      return false;
+    });
+
+    if (matched && matched.passwordHash === pass) {
+      this.teacher = matched;
       this.audit({
-        userId: this.teacher.id,
-        actorLabel: `Teacher: ${this.teacher.full_name}`,
-        action: "teacher_login_success",
+        userId: matched.id,
+        actorLabel: `${matched.role.toUpperCase()}: ${matched.full_name}`,
+        action: "staff_login_success",
         resource: "auth",
+        meta: { role: matched.role, email: matched.email },
       });
-      return { success: true, user: this.teacher };
+      return { success: true, user: matched };
     }
+
     this.audit({
       actorLabel: emailOrUsername,
-      action: "teacher_login_failed",
+      action: "staff_login_failed",
       resource: "auth",
       meta: { identifier: emailOrUsername },
     });
@@ -322,7 +357,13 @@ class PortalStorage {
     roll_number?: string | null;
     email?: string | null;
     phone?: string | null;
+    actorRole?: "super_admin" | "admin" | "teacher";
   }): { student: StudentProfile; temporaryPassword: string } {
+    const role = data.actorRole || this.teacher.role;
+    if (role !== "admin" && role !== "super_admin") {
+      throw new Error("Access Denied: Only administrators and super administrators have permission to add students.");
+    }
+
     const normalized = normalizeLoginId(data.login_id);
     if (this.students.some((s) => normalizeLoginId(s.login_id) === normalized)) {
       throw new Error(`Student Login ID "${data.login_id}" is already in use.`);
@@ -359,7 +400,7 @@ class PortalStorage {
     if (cls) cls.student_count = (cls.student_count || 0) + 1;
 
     this.audit({
-      actorLabel: `Teacher: ${this.teacher.full_name}`,
+      actorLabel: `${this.teacher.role.toUpperCase()}: ${this.teacher.full_name}`,
       action: "student_created",
       resource: "students",
       resourceId: newStudent.id,
@@ -368,6 +409,75 @@ class PortalStorage {
 
     const { passwordHash: _, ...profile } = newStudent;
     return { student: profile, temporaryPassword };
+  }
+
+  // --- STAFF & TEACHER MANAGEMENT (ADMIN / SUPER ADMIN ONLY) ---
+  getStaffUsers(): TeacherUser[] {
+    return [...this.staffUsers];
+  }
+
+  createTeacher(data: {
+    full_name: string;
+    email: string;
+    password?: string;
+    actorRole?: "super_admin" | "admin" | "teacher";
+  }): TeacherUser {
+    const role = data.actorRole || this.teacher.role;
+    if (role !== "admin" && role !== "super_admin") {
+      throw new Error("Access Denied: Only administrators and super administrators can add teachers.");
+    }
+
+    const cleanEmail = data.email.trim().toLowerCase();
+    if (this.staffUsers.some((s) => s.email.toLowerCase() === cleanEmail)) {
+      throw new Error(`Staff user with email "${data.email}" already exists.`);
+    }
+
+    const newTeacher: TeacherUser = {
+      id: "tea-" + Math.random().toString(36).substring(2, 9),
+      email: cleanEmail,
+      full_name: data.full_name.trim(),
+      role: "teacher",
+      passwordHash: data.password?.trim() || "TeacherPass123!",
+    };
+
+    this.staffUsers.push(newTeacher);
+    this.persist();
+
+    this.audit({
+      actorLabel: `${this.teacher.role.toUpperCase()}: ${this.teacher.full_name}`,
+      action: "teacher_created",
+      resource: "staff",
+      resourceId: newTeacher.id,
+      meta: { email: newTeacher.email, name: newTeacher.full_name },
+    });
+
+    return newTeacher;
+  }
+
+  makeSuperAdmin(identifier: string, actorRole?: "super_admin" | "admin" | "teacher"): { success: boolean; message: string } {
+    const role = actorRole || this.teacher.role;
+    if (role !== "super_admin") {
+      throw new Error("Access Denied: Only a Super Administrator can promote accounts to Super Admin.");
+    }
+
+    const clean = identifier.trim().toLowerCase();
+    const staff = this.staffUsers.find((s) => s.email.toLowerCase() === clean || s.id === identifier);
+    if (!staff) {
+      throw new Error(`Staff user not found for identifier "${identifier}".`);
+    }
+
+    staff.role = "super_admin";
+    this.persist();
+
+    this.audit({
+      actorLabel: `Super Admin: ${this.teacher.full_name}`,
+      action: "role_promoted_super_admin",
+      resource: "staff",
+      resourceId: staff.id,
+      meta: { email: staff.email },
+    });
+
+    return { success: true, message: `Account ${staff.email} successfully promoted to Super Admin.` };
   }
 
   updateStudent(

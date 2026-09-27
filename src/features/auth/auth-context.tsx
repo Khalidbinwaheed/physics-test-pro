@@ -2,10 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { portalStorage, TeacherUser } from "@/lib/portal-storage";
 import { StudentProfile } from "@/lib/portal-types";
 
-type UserRole = "teacher" | "student" | null;
+export type UserRole = "super_admin" | "admin" | "teacher" | "student" | null;
 
 interface AuthContextType {
   role: UserRole;
+  isSuperAdmin: boolean;
+  isAdmin: boolean;
+  isTeacher: boolean;
   teacher: TeacherUser | null;
   student: StudentProfile | null;
   isLoading: boolean;
@@ -30,9 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.role === "teacher" && parsed.teacher) {
-          setRole("teacher");
+        if ((parsed.role === "teacher" || parsed.role === "admin" || parsed.role === "super_admin") && parsed.teacher) {
+          setRole(parsed.teacher.role || parsed.role);
           setTeacher(parsed.teacher);
+          portalStorage.setCurrentStaff(parsed.teacher);
         } else if (parsed.role === "student" && parsed.student) {
           // Re-fetch current student state to respect disable/archive
           const current = portalStorage.getStudentById(parsed.student.id);
@@ -54,10 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginTeacher = async (emailOrUsername: string, pass: string) => {
     const res = portalStorage.authenticateTeacher(emailOrUsername, pass);
     if (res.success && res.user) {
-      setRole("teacher");
+      setRole(res.user.role);
       setTeacher(res.user);
+      portalStorage.setCurrentStaff(res.user);
       setStudent(null);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ role: "teacher", teacher: res.user }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ role: res.user.role, teacher: res.user }));
       return { success: true };
     }
     return { success: false, error: res.error || "Login failed" };
@@ -113,10 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res;
   };
 
+  const isSuperAdmin = teacher?.role === "super_admin";
+  const isAdmin = teacher?.role === "admin" || teacher?.role === "super_admin";
+  const isTeacher = teacher?.role === "teacher";
+
   return (
     <AuthContext.Provider
       value={{
         role,
+        isSuperAdmin,
+        isAdmin,
+        isTeacher,
         teacher,
         student,
         isLoading,

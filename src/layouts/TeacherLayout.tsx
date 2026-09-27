@@ -12,6 +12,7 @@ import {
   Send,
   Award,
   ShieldCheck,
+  Crown,
   LogOut,
   ChevronRight,
   Menu,
@@ -25,12 +26,13 @@ interface TeacherLayoutProps {
 }
 
 export function TeacherLayout({ currentTab, onSelectTab, children }: TeacherLayoutProps) {
-  const { teacher, logout } = useAuth();
+  const { teacher, isAdmin, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "students", label: "Students", icon: Users },
+    ...(isAdmin ? [{ id: "staff", label: "Staff & Teachers", icon: Crown }] : []),
     { id: "classes", label: "Classes", icon: School },
     { id: "chapters", label: "Chapters & Topics", icon: BookOpen },
     { id: "mcqs", label: "Question Bank", icon: HelpCircle },
@@ -75,7 +77,19 @@ export function TeacherLayout({ currentTab, onSelectTab, children }: TeacherLayo
 
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs font-semibold text-foreground">{teacher?.full_name || "Instructor"}</span>
-            <span className="text-[10px] font-mono text-emerald-500 font-semibold">Teacher / Admin</span>
+            {teacher?.role === "super_admin" ? (
+              <span className="text-[10px] font-mono text-purple-400 font-bold flex items-center justify-end gap-1">
+                <Crown className="w-3 h-3 text-purple-400" />
+                Super Admin
+              </span>
+            ) : teacher?.role === "admin" ? (
+              <span className="text-[10px] font-mono text-cyan-400 font-bold flex items-center justify-end gap-1">
+                <ShieldCheck className="w-3 h-3 text-cyan-400" />
+                Administrator
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono text-emerald-500 font-semibold">Teacher</span>
+            )}
           </div>
 
           <button

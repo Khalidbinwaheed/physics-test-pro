@@ -23,6 +23,16 @@ async function runTests() {
     class_id: testClass.id,
     roll_number: "999",
   };
+
+  // Verify privacy rule: Teacher is blocked from adding student
+  assert.throws(
+    () => portalStorage.createStudent(newStudentData),
+    /Access Denied: Only administrators and super administrators have permission to add students/,
+    "Teacher without admin role must be blocked from creating students"
+  );
+
+  // Authenticate as Administrator to create student
+  portalStorage.authenticateTeacher("admin@physlab.local", "AdminPass123!");
   const created = portalStorage.createStudent(newStudentData);
   assert.strictEqual(created.student.login_id, "PHY-TEST-99");
   assert.strictEqual(created.student.status, "active");

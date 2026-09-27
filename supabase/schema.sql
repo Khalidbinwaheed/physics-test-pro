@@ -14,7 +14,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- 1. ENUMS
 -- ============================================================================
 DO $$ BEGIN
-  CREATE TYPE public.app_role AS ENUM ('admin', 'teacher', 'student');
+  CREATE TYPE public.app_role AS ENUM ('super_admin', 'admin', 'teacher', 'student');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -318,7 +318,7 @@ CREATE TRIGGER trg_tests_updated BEFORE UPDATE ON public.tests FOR EACH ROW EXEC
 -- 6. RBAC HELPER FUNCTIONS
 -- ============================================================================
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role public.app_role)
-RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, auth AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.user_roles WHERE user_id = _user_id AND role = _role
     UNION
@@ -326,9 +326,69 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER AS $$
   );
 $$;
 
+-- Check if a specific user (or auth.uid()) is a Super Admin
+CREATE OR REPLACE FUNCTION public.is_super_admin(p_user_id uuid DEFAULT auth.uid())
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, auth AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles WHERE user_id = p_user_id AND role = 'super_admin'
+    UNION
+    SELECT 1 FROM public.profiles WHERE id = p_user_id AND role = 'super_admin'
+  );
+$$;
+
+-- Check if a specific user (or auth.uid()) is an Admin or Super Admin
+CREATE OR REPLACE FUNCTION public.is_admin(p_user_id uuid DEFAULT auth.uid())
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, auth AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles WHERE user_id = p_user_id AND role IN ('admin', 'super_admin')
+    UNION
+    SELECT 1 FROM public.profiles WHERE id = p_user_id AND role IN ('admin', 'super_admin')
+  );
+$$;
+
+-- Check if a specific user is a Teacher, Admin, or Super Admin
+CREATE OR REPLACE FUNCTION public.is_teacher_or_admin(p_user_id uuid DEFAULT auth.uid())
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, auth AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.user_roles WHERE user_id = p_user_id AND role IN ('teacher', 'admin', 'super_admin')
+    UNION
+    SELECT 1 FROM public.profiles WHERE id = p_user_id AND role IN ('teacher', 'admin', 'super_admin')
+  );
+$$;
+
+-- Function to promote a user to Super Admin
+CREATE OR REPLACE FUNCTION public.make_super_admin(p_identifier text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
+DECLARE
+  v_user_id uuid;
+BEGIN
+  SELECT id INTO v_user_id
+  FROM public.profiles
+  WHERE id::text = p_identifier
+     OR lower(trim(email)) = lower(trim(p_identifier))
+     OR upper(trim(login_id)) = upper(trim(p_identifier))
+  LIMIT 1;
+
+  IF v_user_id IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', format('No user found for: %s', p_identifier));
+  END IF;
+
+  UPDATE public.profiles SET role = 'super_admin', updated_at = now() WHERE id = v_user_id;
+
+  INSERT INTO public.user_roles (user_id, role)
+  VALUES (v_user_id, 'super_admin')
+  ON CONFLICT (user_id, role) DO NOTHING;
+
+  INSERT INTO public.audit_logs (action, resource, resource_id, meta)
+  VALUES ('role_promoted_super_admin', 'profiles', v_user_id::text, jsonb_build_object('identifier', p_identifier));
+
+  RETURN jsonb_build_object('success', true, 'user_id', v_user_id);
+END;
+$$;
+
 -- Function to safely authenticate a student via Login ID and password
 CREATE OR REPLACE FUNCTION public.authenticate_student(p_login_id text, p_password text)
-RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER AS $$
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth AS $$
 DECLARE
   v_profile public.profiles%ROWTYPE;
 BEGIN
@@ -392,19 +452,90 @@ GRANT SELECT ON public.topics TO anon;
 GRANT SELECT ON public.profiles TO anon;
 GRANT SELECT, INSERT, UPDATE ON public.login_attempts TO anon;
 GRANT EXECUTE ON FUNCTION public.authenticate_student TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.is_super_admin TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.is_admin TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.is_teacher_or_admin TO anon, authenticated;
 
--- Policies for Profiles
+-- ----------------------------------------------------------------------------
+-- STRICT PRIVACY POLICIES FOR PROFILES
+-- ----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "profiles_select_all" ON public.profiles;
-CREATE POLICY "profiles_select_all" ON public.profiles FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "profiles_insert_all" ON public.profiles;
-CREATE POLICY "profiles_insert_all" ON public.profiles FOR INSERT WITH CHECK (true);
-
 DROP POLICY IF EXISTS "profiles_update_all" ON public.profiles;
-CREATE POLICY "profiles_update_all" ON public.profiles FOR UPDATE USING (true);
-
 DROP POLICY IF EXISTS "profiles_delete_all" ON public.profiles;
-CREATE POLICY "profiles_delete_all" ON public.profiles FOR DELETE USING (true);
+DROP POLICY IF EXISTS "profiles_select_policy" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_policy" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_policy" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_delete_policy" ON public.profiles;
+
+-- [A] SELECT Policy:
+CREATE POLICY "profiles_select_policy" ON public.profiles
+FOR SELECT TO authenticated, anon
+USING (
+  public.is_admin((SELECT auth.uid()))
+  OR (public.is_teacher_or_admin((SELECT auth.uid())) AND (role = 'student' OR id = (SELECT auth.uid())))
+  OR (id = (SELECT auth.uid()))
+  OR ((SELECT auth.role()) = 'anon')
+);
+
+-- [B] INSERT Policy: ONLY Admin & Super Admin can add teachers and students!
+CREATE POLICY "profiles_insert_policy" ON public.profiles
+FOR INSERT TO authenticated
+WITH CHECK (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (
+    public.is_admin((SELECT auth.uid()))
+    AND role IN ('teacher', 'student')
+  )
+);
+
+-- [C] UPDATE Policy:
+CREATE POLICY "profiles_update_policy" ON public.profiles
+FOR UPDATE TO authenticated
+USING (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+  OR (id = (SELECT auth.uid()))
+)
+WITH CHECK (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+  OR (
+    id = (SELECT auth.uid())
+    AND role = (SELECT p.role FROM public.profiles p WHERE p.id = (SELECT auth.uid()))
+  )
+);
+
+-- [D] DELETE Policy:
+CREATE POLICY "profiles_delete_policy" ON public.profiles
+FOR DELETE TO authenticated
+USING (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+);
+
+-- ----------------------------------------------------------------------------
+-- POLICIES FOR USER_ROLES
+-- ----------------------------------------------------------------------------
+DROP POLICY IF EXISTS "user_roles_select_policy" ON public.user_roles;
+CREATE POLICY "user_roles_select_policy" ON public.user_roles
+FOR SELECT TO authenticated
+USING (
+  public.is_admin((SELECT auth.uid()))
+  OR user_id = (SELECT auth.uid())
+);
+
+DROP POLICY IF EXISTS "user_roles_manage_policy" ON public.user_roles;
+CREATE POLICY "user_roles_manage_policy" ON public.user_roles
+FOR ALL TO authenticated
+USING (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+)
+WITH CHECK (
+  public.is_super_admin((SELECT auth.uid()))
+  OR (public.is_admin((SELECT auth.uid())) AND role IN ('teacher', 'student'))
+);
 
 -- Policies for Classes
 DROP POLICY IF EXISTS "classes_policy" ON public.classes;
@@ -461,7 +592,34 @@ CREATE POLICY "login_attempts_policy" ON public.login_attempts FOR ALL USING (tr
 -- ============================================================================
 -- 8. INITIAL ADMIN/TEACHER ACCOUNT SEED (Optional initial bootstrap)
 -- ============================================================================
--- Creates an initial teacher profile if none exists.
+-- 1. Initial Super Admin Profile
+INSERT INTO public.profiles (
+  id,
+  role,
+  full_name,
+  login_id,
+  email,
+  status,
+  force_password_change,
+  password_hash
+) VALUES (
+  '00000000-0000-0000-0000-000000000000',
+  'super_admin',
+  'Super Administrator',
+  'SUPERADMIN-01',
+  'superadmin@physlab.local',
+  'active',
+  false,
+  'SuperAdminPass123!'
+) ON CONFLICT (login_id) DO UPDATE SET
+  role = 'super_admin',
+  status = 'active';
+
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('00000000-0000-0000-0000-000000000000', 'super_admin')
+ON CONFLICT (user_id, role) DO NOTHING;
+
+-- 2. Initial Teacher Profile
 INSERT INTO public.profiles (
   id,
   role,

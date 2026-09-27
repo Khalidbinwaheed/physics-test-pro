@@ -7,6 +7,7 @@ import { TeacherLayout } from "@/layouts/TeacherLayout";
 import { StudentLayout } from "@/layouts/StudentLayout";
 import { TeacherDashboard } from "@/features/teacher/TeacherDashboard";
 import { StudentManagement } from "@/features/teacher/StudentManagement";
+import { StaffManagement } from "@/features/teacher/StaffManagement";
 import { ClassManagement } from "@/features/teacher/ClassManagement";
 import { ChapterManagement } from "@/features/teacher/ChapterManagement";
 import { QuestionBank } from "@/features/teacher/QuestionBank";
@@ -88,12 +89,13 @@ function PortalApp() {
     );
   }
 
-  // TEACHER PORTAL
-  if (role === "teacher" && teacher) {
+  // INSTRUCTOR & ADMINISTRATIVE PORTAL (Super Admin, Admin, Teacher)
+  if ((role === "teacher" || role === "admin" || role === "super_admin") && teacher) {
     return (
       <TeacherLayout currentTab={teacherTab} onSelectTab={setTeacherTab}>
         {teacherTab === "dashboard" && <TeacherDashboard onNavigateTab={setTeacherTab} />}
         {teacherTab === "students" && <StudentManagement />}
+        {teacherTab === "staff" && <StaffManagement />}
         {teacherTab === "classes" && <ClassManagement />}
         {teacherTab === "chapters" && <ChapterManagement />}
         {teacherTab === "mcqs" && <QuestionBank />}

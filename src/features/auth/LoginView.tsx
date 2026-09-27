@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./auth-context";
 import { ThemeToggle } from "@/lib/theme";
-import { Atom, Shield, User, Lock, ArrowRight, AlertCircle, KeyRound, Sparkles } from "lucide-react";
+import { Atom, Shield, User, Lock, ArrowRight, AlertCircle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoginViewProps {
@@ -302,17 +302,6 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                     </>
                   )}
                 </button>
-
-                {/* Instructor Portal Info */}
-                <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-1.5 font-semibold">
-                    <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
-                    <span>Administrator Credentials</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">
-                    Sign in with your instructor email and secure password configured in your Supabase database or portal settings. Default initial admin: <code className="font-mono text-emerald-500">teacher@physlab.local</code>.
-                  </p>
-                </div>
               </form>
             )}
           </div>
