@@ -106,18 +106,18 @@ export function ChapterManagement() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <BookOpen className="w-6 h-6 text-indigo-400" />
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <BookOpen className="w-6 h-6 text-primary" />
             <span>Physics Chapters & Topics</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
             Dynamic curriculum taxonomy • Not hardcoded • Organize MCQs by chapter & topic
           </p>
         </div>
 
         <button
           onClick={openCreateChapter}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-indigo-600/30"
+          className="flex items-center gap-2 px-4 py-2.5 neu-btn-primary rounded-xl text-sm font-semibold cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Add Chapter</span>
@@ -132,35 +132,35 @@ export function ChapterManagement() {
           return (
             <div
               key={ch.id}
-              className="p-5 bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl shadow-lg transition-all space-y-3 flex flex-col justify-between"
+              className="p-6 rounded-2xl neu-raised hover:neu-raised-lg transition-all space-y-3 flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-indigo-400">
+                  <span className="text-xs font-mono font-bold text-primary">
                     Chapter {ch.chapter_number}
                   </span>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openEditChapter(ch)}
-                      className="p-1 text-slate-400 hover:text-indigo-400 rounded"
+                      className="p-1.5 neu-btn rounded-xl text-muted-foreground hover:text-primary cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-white tracking-tight mt-1">{ch.name}</h3>
+                <h3 className="text-lg font-bold text-foreground tracking-tight mt-1">{ch.name}</h3>
                 {ch.description && (
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">{ch.description}</p>
+                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{ch.description}</p>
                 )}
 
                 {/* Topics Tags */}
-                <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                <div className="mt-3 pt-3 border-t border-border/60 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground">
                     <span>Topics ({chapterTopics.length}):</span>
                     <button
                       onClick={() => openAddTopic(ch.id)}
-                      className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                      className="text-primary hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add Topic</span>
@@ -169,12 +169,12 @@ export function ChapterManagement() {
 
                   <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                     {chapterTopics.length === 0 ? (
-                      <span className="text-[11px] text-slate-500 italic">No topics created yet.</span>
+                      <span className="text-[11px] text-muted-foreground italic">No topics created yet.</span>
                     ) : (
                       chapterTopics.map((t) => (
                         <span
                           key={t.id}
-                          className="px-2 py-0.5 bg-slate-950 border border-slate-800 rounded text-[11px] text-slate-300 font-sans"
+                          className="px-2.5 py-1 neu-inset-sm rounded-lg text-[11px] text-foreground font-sans"
                         >
                           {t.name}
                         </span>
@@ -185,9 +185,9 @@ export function ChapterManagement() {
               </div>
 
               {/* Footer info */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-500">
+              <div className="pt-3 border-t border-border/60 flex items-center justify-between text-xs font-mono text-muted-foreground">
                 <span>{ch.mcq_count || 0} Questions linked</span>
-                <span className="text-emerald-400 uppercase text-[10px] font-bold">{ch.status}</span>
+                <span className="text-emerald-500 uppercase text-[10px] font-bold neu-inset-sm px-2 py-0.5 rounded">{ch.status}</span>
               </div>
             </div>
           );
@@ -196,20 +196,23 @@ export function ChapterManagement() {
 
       {/* CREATE / EDIT CHAPTER MODAL */}
       {showChapterModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 text-slate-100 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-lg text-white">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md neu-raised-lg rounded-3xl p-6 sm:p-7 text-foreground animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+              <h3 className="font-bold text-lg text-foreground">
                 {editingChapter ? "Edit Chapter" : "Create Physics Chapter"}
               </h3>
-              <button onClick={() => setShowChapterModal(false)} className="text-slate-400 hover:text-white p-1">
+              <button
+                onClick={() => setShowChapterModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-xl neu-btn-interactive cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleChapterSubmit} className="space-y-4 mt-4">
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Chapter Number *
                 </label>
                 <input
@@ -218,12 +221,12 @@ export function ChapterManagement() {
                   required
                   value={chapterForm.chapter_number}
                   onChange={(e) => setChapterForm({ ...chapterForm, chapter_number: Number(e.target.value) })}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl neu-inset text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Chapter Title *
                 </label>
                 <input
@@ -232,12 +235,12 @@ export function ChapterManagement() {
                   value={chapterForm.name}
                   onChange={(e) => setChapterForm({ ...chapterForm, name: e.target.value })}
                   placeholder="e.g. Motion and Force"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Description
                 </label>
                 <textarea
@@ -245,21 +248,21 @@ export function ChapterManagement() {
                   value={chapterForm.description}
                   onChange={(e) => setChapterForm({ ...chapterForm, description: e.target.value })}
                   placeholder="Brief synopsis of topics and laws covered in this chapter..."
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowChapterModal(false)}
-                  className="px-4 py-2 border border-slate-700 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
+                  className="px-4 py-2 neu-btn rounded-xl text-sm text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-600/30"
+                  className="px-5 py-2 neu-btn-primary rounded-xl text-sm font-semibold cursor-pointer"
                 >
                   Save Chapter
                 </button>
@@ -271,18 +274,21 @@ export function ChapterManagement() {
 
       {/* ADD TOPIC MODAL */}
       {showTopicModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 text-slate-100 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-base text-white">Add Topic to Chapter</h3>
-              <button onClick={() => setShowTopicModal(false)} className="text-slate-400 hover:text-white p-1">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-sm neu-raised-lg rounded-3xl p-6 sm:p-7 text-foreground animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
+              <h3 className="font-bold text-base text-foreground">Add Topic to Chapter</h3>
+              <button
+                onClick={() => setShowTopicModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-xl neu-btn-interactive cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleTopicSubmit} className="space-y-4 mt-4">
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Topic Name *
                 </label>
                 <input
@@ -291,21 +297,21 @@ export function ChapterManagement() {
                   value={topicName}
                   onChange={(e) => setTopicName(e.target.value)}
                   placeholder="e.g. Projectile Motion, Friction"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowTopicModal(false)}
-                  className="px-3 py-1.5 border border-slate-700 rounded-xl text-xs text-slate-300"
+                  className="px-3.5 py-2 neu-btn rounded-xl text-xs text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-medium"
+                  className="px-4 py-2 neu-btn-primary rounded-xl text-xs font-semibold cursor-pointer"
                 >
                   Add Topic
                 </button>

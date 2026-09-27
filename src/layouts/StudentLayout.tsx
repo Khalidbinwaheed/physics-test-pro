@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "@/features/auth/auth-context";
+import { ThemeToggle } from "@/lib/theme";
 import {
   Atom,
   LayoutDashboard,
@@ -26,51 +27,55 @@ export function StudentLayout({ currentTab, onSelectTab, children }: StudentLayo
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
     { id: "tests", label: "My Examinations", icon: FileText },
     { id: "results", label: "Assessment Results", icon: Award },
-    { id: "profile", label: "Profile & Password", icon: User },
+    { id: "profile", label: "Profile & Settings", icon: User },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans transition-colors duration-200">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 neu-header backdrop-blur-md px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg"
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground neu-btn rounded-xl"
+            aria-label="Toggle navigation"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 p-0.5 flex items-center justify-center shadow shadow-indigo-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Atom className="w-4 h-4 text-indigo-400" />
+          <div className="w-10 h-10 rounded-xl neu-raised flex items-center justify-center p-1">
+            <div className="w-full h-full rounded-lg neu-inset flex items-center justify-center">
+              <Atom className="w-5 h-5 text-primary animate-pulse" />
             </div>
           </div>
 
           <div>
-            <h1 className="font-bold text-sm sm:text-base text-white tracking-tight">
+            <h1 className="font-bold text-sm sm:text-base text-foreground tracking-tight flex items-center gap-2">
               Physics MCQ Portal
             </h1>
-            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">
+            <span className="text-[10px] text-muted-foreground font-mono hidden sm:inline">
               Student Examination Interface
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Neumorphic Theme Switcher */}
+          <ThemeToggle />
+
           <div className="hidden sm:flex flex-col text-right font-mono">
-            <span className="text-xs font-semibold text-white font-sans">{student?.full_name}</span>
-            <span className="text-[11px] text-indigo-400 font-bold">{student?.login_id}</span>
+            <span className="text-xs font-semibold text-foreground font-sans">{student?.full_name}</span>
+            <span className="text-[11px] text-primary font-bold">{student?.login_id}</span>
           </div>
 
-          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <div className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase neu-raised-sm text-emerald-500 font-bold border border-emerald-500/30">
             Active
           </div>
 
           <button
             onClick={logout}
             title="Sign Out"
-            className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800/80 rounded-xl transition-colors"
+            className="p-2 text-muted-foreground hover:text-destructive neu-btn-interactive rounded-xl transition-colors cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>
@@ -81,12 +86,12 @@ export function StudentLayout({ currentTab, onSelectTab, children }: StudentLayo
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <aside
-          className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-slate-900/95 border-r border-slate-800 p-4 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 ${
+          className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-card border-r border-border p-4 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 neu-raised md:shadow-none ${
             mobileMenuOpen ? "translate-x-0 top-14" : "-translate-x-full"
           }`}
         >
-          <div className="space-y-1">
-            <div className="px-3 py-2 text-[10px] font-mono uppercase text-slate-500 font-semibold tracking-wider">
+          <div className="space-y-1.5">
+            <div className="px-3 py-2 text-[10px] font-mono uppercase text-muted-foreground font-semibold tracking-wider">
               Student Portal
             </div>
 
@@ -100,14 +105,14 @@ export function StudentLayout({ currentTab, onSelectTab, children }: StudentLayo
                     onSelectTab(item.id);
                     setMobileMenuOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all duration-150 cursor-pointer ${
                     isActive
-                      ? "bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                      ? "neu-btn-primary text-white font-semibold"
+                      : "text-muted-foreground hover:text-foreground neu-btn-interactive"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-400"}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-primary"}`} />
                     <span>{item.label}</span>
                   </div>
                   {isActive && <ChevronRight className="w-3.5 h-3.5" />}
@@ -116,10 +121,16 @@ export function StudentLayout({ currentTab, onSelectTab, children }: StudentLayo
             })}
           </div>
 
-          <div className="p-3 bg-slate-950/70 border border-slate-800/80 rounded-xl text-[11px] font-mono text-slate-400 space-y-1">
-            <div className="text-emerald-400 font-semibold uppercase text-[10px]">Session Security</div>
-            <div>Auth: Verified</div>
-            <div>Timer: Authoritative</div>
+          <div className="p-3.5 rounded-2xl neu-inset text-[11px] font-mono text-muted-foreground space-y-1 mt-4">
+            <div className="text-emerald-500 font-semibold uppercase text-[10px]">Session Security</div>
+            <div className="flex items-center justify-between">
+              <span>Authentication:</span>
+              <span className="text-emerald-500 font-semibold">Verified</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Exam Engine:</span>
+              <span className="text-primary font-semibold">Ready</span>
+            </div>
           </div>
         </aside>
 

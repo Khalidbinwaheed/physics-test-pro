@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { portalStorage } from "../src/lib/portal-storage.js";
+import { portalStorage } from "../src/lib/portal-storage.ts";
 
 async function runTests() {
   console.log("=== RUNNING PHYSICS MCQ EXAMINATION PORTAL VERIFICATION TESTS ===");

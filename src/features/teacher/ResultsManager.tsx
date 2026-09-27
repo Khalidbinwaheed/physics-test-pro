@@ -85,34 +85,34 @@ export function ResultsManager() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Award className="w-6 h-6 text-indigo-400" />
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Award className="w-6 h-6 text-primary" />
             <span>Assessment Results & Submissions</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
             Server-scored results • Immutable attempt grading • Individual attempt audits
           </p>
         </div>
 
         <button
           onClick={exportResultsCsv}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-sm font-medium transition-all shadow"
+          className="flex items-center gap-2 px-4 py-2.5 neu-btn text-foreground rounded-xl text-sm font-semibold cursor-pointer"
         >
-          <Download className="w-4 h-4 text-emerald-400" />
+          <Download className="w-4 h-4 text-emerald-500" />
           <span>Export Results CSV</span>
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-2xl neu-raised">
         <div className="sm:col-span-8 relative">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
           <input
             type="text"
             value={searchTerm}
             onChange={handleSearch}
             placeholder="Search by student name, Login ID, or test title..."
-            className="w-full pl-10 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
           />
         </div>
 
@@ -120,7 +120,7 @@ export function ResultsManager() {
           <select
             value={selectedTestFilter}
             onChange={(e) => handleFilterTest(e.target.value)}
-            className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full py-2.5 px-3 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             <option value="all">All Tests</option>
             {tests.map((t) => (
@@ -133,10 +133,10 @@ export function ResultsManager() {
       </div>
 
       {/* Results Table */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div className="rounded-2xl neu-raised overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/80 border-b border-slate-800 text-xs font-mono uppercase text-slate-400">
+          <table className="w-full text-left text-sm text-foreground">
+            <thead className="neu-inset-sm border-b border-border/60 text-xs font-mono uppercase text-muted-foreground">
               <tr>
                 <th className="px-5 py-3.5">Student ID</th>
                 <th className="px-5 py-3.5">Student</th>
@@ -149,53 +149,53 @@ export function ResultsManager() {
                 <th className="px-5 py-3.5 text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-sans">
+            <tbody className="divide-y divide-border/40 font-sans">
               {results.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="px-5 py-12 text-center text-slate-500 font-mono text-xs">
+                  <td colSpan={9} className="px-5 py-12 text-center text-muted-foreground font-mono text-xs">
                     No submitted exam results found yet.
                   </td>
                 </tr>
               ) : (
                 results.map((res) => (
-                  <tr key={res.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="px-5 py-3.5 font-mono text-xs font-semibold text-indigo-400">
+                  <tr key={res.id} className="hover:bg-muted/40 transition-colors">
+                    <td className="px-5 py-3.5 font-mono text-xs font-bold text-primary">
                       {res.student_login_id}
                     </td>
-                    <td className="px-5 py-3.5 font-medium text-white">{res.student_name}</td>
-                    <td className="px-5 py-3.5 text-slate-200">
-                      <div className="font-medium">{res.test_title}</div>
+                    <td className="px-5 py-3.5 font-medium text-foreground">{res.student_name}</td>
+                    <td className="px-5 py-3.5 text-foreground">
+                      <div className="font-semibold">{res.test_title}</div>
                       {res.chapter_name && (
-                        <div className="text-[11px] text-slate-500 font-mono">{res.chapter_name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono">{res.chapter_name}</div>
                       )}
                     </td>
-                    <td className="px-5 py-3.5 font-mono font-bold text-white">
+                    <td className="px-5 py-3.5 font-mono font-bold text-foreground">
                       {res.score} / {res.max_score}
                     </td>
-                    <td className="px-5 py-3.5 font-mono font-bold text-indigo-300">{res.percentage}%</td>
+                    <td className="px-5 py-3.5 font-mono font-bold text-primary">{res.percentage}%</td>
                     <td className="px-5 py-3.5">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono uppercase font-bold ${
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-mono uppercase font-bold neu-inset-sm ${
                           res.passed
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-red-500/10 text-red-400 border border-red-500/20"
+                            ? "text-emerald-500"
+                            : "text-destructive"
                         }`}
                       >
                         {res.passed ? "Passed" : "Failed"}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-slate-400">
-                      <span className="text-emerald-400">{res.correct_count}✓</span>{" "}
-                      <span className="text-red-400">{res.incorrect_count}✗</span>{" "}
-                      <span className="text-slate-500">{res.unanswered_count}—</span>
+                    <td className="px-5 py-3.5 font-mono text-xs">
+                      <span className="text-emerald-500 font-bold">{res.correct_count}✓</span>{" "}
+                      <span className="text-destructive font-bold">{res.incorrect_count}✗</span>{" "}
+                      <span className="text-muted-foreground">{res.unanswered_count}—</span>
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-slate-400">
+                    <td className="px-5 py-3.5 font-mono text-xs text-muted-foreground">
                       {Math.floor(res.time_taken_seconds / 60)}m {res.time_taken_seconds % 60}s
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <button
                         onClick={() => viewAttemptDetails(res)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-400 rounded-lg text-xs font-medium transition-colors inline-flex items-center gap-1"
+                        className="px-3 py-1.5 neu-btn text-primary rounded-xl text-xs font-semibold inline-flex items-center gap-1 cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         <span>Inspect</span>
@@ -211,16 +211,19 @@ export function ResultsManager() {
 
       {/* DETAILED ATTEMPT AUDIT MODAL */}
       {detailedAttempt && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 text-slate-100 my-8 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl neu-raised-lg rounded-3xl p-6 sm:p-7 text-foreground my-8 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div>
-                <h3 className="font-bold text-lg text-white">{detailedAttempt.test_title}</h3>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                <h3 className="font-bold text-lg text-foreground">{detailedAttempt.test_title}</h3>
+                <p className="text-xs text-muted-foreground font-mono mt-0.5">
                   Attempt by {detailedAttempt.student_name} ({detailedAttempt.student_login_id}) • Attempt #{detailedAttempt.attempt_number}
                 </p>
               </div>
-              <button onClick={() => setDetailedAttempt(null)} className="text-slate-400 hover:text-white p-1">
+              <button
+                onClick={() => setDetailedAttempt(null)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-xl neu-btn-interactive cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -235,36 +238,36 @@ export function ResultsManager() {
                 return (
                   <div
                     key={q.tqId}
-                    className={`p-4 rounded-xl border space-y-3 ${
+                    className={`p-5 rounded-2xl space-y-3 transition-all ${
                       isCorrect
-                        ? "bg-emerald-950/20 border-emerald-500/30"
+                        ? "neu-raised border border-emerald-500/40"
                         : isUnanswered
-                        ? "bg-slate-950/50 border-slate-800"
-                        : "bg-red-950/20 border-red-500/30"
+                        ? "neu-raised"
+                        : "neu-raised border border-destructive/40"
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs font-mono">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-white">Q{idx + 1}.</span>
-                        <span className="text-slate-400">{q.chapter_name}</span>
+                        <span className="font-bold text-foreground">Q{idx + 1}.</span>
+                        <span className="text-muted-foreground">{q.chapter_name}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {isCorrect && (
-                          <span className="text-emerald-400 font-bold flex items-center gap-1">
+                          <span className="text-emerald-500 font-bold flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" /> Correct (+{q.marks} pts)
                           </span>
                         )}
                         {!isCorrect && !isUnanswered && (
-                          <span className="text-red-400 font-bold flex items-center gap-1">
+                          <span className="text-destructive font-bold flex items-center gap-1">
                             <XCircle className="w-3.5 h-3.5" /> Incorrect (-{detailedAttempt.negative_marking ? q.negative_marks : 0} pts)
                           </span>
                         )}
-                        {isUnanswered && <span className="text-slate-500 font-medium">Unanswered (0 pts)</span>}
+                        {isUnanswered && <span className="text-muted-foreground font-medium">Unanswered (0 pts)</span>}
                       </div>
                     </div>
 
-                    <div className="text-white text-sm font-medium">
+                    <div className="text-foreground text-sm font-medium">
                       <MathText text={q.question} />
                     </div>
 
@@ -276,25 +279,25 @@ export function ResultsManager() {
                         const isStudentChoice = studentAnswer === opt;
                         const isTheCorrectAnswer = q.correct_answer === opt;
 
-                        let borderBg = "border-slate-800 bg-slate-950/60 text-slate-400";
+                        let borderBg = "neu-inset text-muted-foreground";
                         if (isTheCorrectAnswer) {
-                          borderBg = "border-emerald-500/60 bg-emerald-500/10 text-emerald-200 font-medium";
+                          borderBg = "neu-raised text-emerald-600 dark:text-emerald-300 border border-emerald-500/50 font-medium";
                         } else if (isStudentChoice) {
-                          borderBg = "border-red-500/60 bg-red-500/10 text-red-200 font-medium";
+                          borderBg = "neu-inset text-destructive border border-destructive/50 font-medium";
                         }
 
                         return (
-                          <div key={opt} className={`p-2 rounded-lg border flex items-start gap-2 ${borderBg}`}>
+                          <div key={opt} className={`p-2.5 rounded-xl flex items-start gap-2 ${borderBg}`}>
                             <span className="font-mono font-bold">{opt}.</span>
                             <div className="flex-1">
                               <MathText text={optText} />
                               {isStudentChoice && (
-                                <span className="ml-2 font-mono text-[10px] text-indigo-400 uppercase">
+                                <span className="ml-2 font-mono text-[10px] text-primary uppercase font-bold">
                                   [Student Selected]
                                 </span>
                               )}
                               {isTheCorrectAnswer && (
-                                <span className="ml-2 font-mono text-[10px] text-emerald-400 uppercase">
+                                <span className="ml-2 font-mono text-[10px] text-emerald-500 uppercase font-bold">
                                   [Correct Answer]
                                 </span>
                               )}
@@ -305,8 +308,8 @@ export function ResultsManager() {
                     </div>
 
                     {q.explanation && (
-                      <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-400">
-                        <span className="font-mono text-[10px] text-indigo-400 uppercase font-semibold block mb-0.5">
+                      <div className="p-3 rounded-xl neu-inset text-xs text-foreground">
+                        <span className="font-mono text-[10px] text-primary uppercase font-bold block mb-0.5">
                           Physics Explanation:
                         </span>
                         <MathText text={q.explanation} />
@@ -317,11 +320,11 @@ export function ResultsManager() {
               })}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-800 mt-4">
+            <div className="flex justify-end pt-4 border-t border-border/60 mt-4">
               <button
                 type="button"
                 onClick={() => setDetailedAttempt(null)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium"
+                className="px-5 py-2.5 neu-btn text-foreground rounded-xl text-sm font-semibold cursor-pointer"
               >
                 Close Audit View
               </button>

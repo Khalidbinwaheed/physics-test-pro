@@ -32,7 +32,7 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
       <div>
         <button
           onClick={onReturn}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-xl text-xs font-mono transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 neu-btn rounded-xl text-xs font-mono text-foreground cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Dashboard</span>
@@ -40,31 +40,31 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
       </div>
 
       {/* Main Score Card */}
-      <div className="p-6 sm:p-10 bg-slate-900/90 border border-slate-800 rounded-3xl shadow-2xl text-center space-y-6 relative overflow-hidden">
-        <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center border shadow-xl shadow-indigo-500/10 bg-indigo-500/10 border-indigo-500/30 text-indigo-400">
+      <div className="p-6 sm:p-10 rounded-3xl neu-raised text-center space-y-6 relative overflow-hidden">
+        <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center neu-inset text-primary">
           <Award className="w-8 h-8" />
         </div>
 
         <div>
-          <span className="text-xs font-mono uppercase text-slate-400 font-semibold tracking-wider">
+          <span className="text-xs font-mono uppercase text-muted-foreground font-semibold tracking-wider">
             Assessment Result
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">{result.test_title}</h2>
-          {result.chapter_name && <p className="text-xs text-indigo-400 font-mono mt-1">{result.chapter_name}</p>}
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mt-1">{result.test_title}</h2>
+          {result.chapter_name && <p className="text-xs text-primary font-mono mt-1 font-semibold">{result.chapter_name}</p>}
         </div>
 
         {/* Big Score Display */}
         <div className="py-2">
-          <div className="text-5xl sm:text-6xl font-black text-white font-mono tracking-tight">
-            {result.score} <span className="text-2xl text-slate-500 font-normal">/ {result.max_score}</span>
+          <div className="text-5xl sm:text-6xl font-black text-foreground font-mono tracking-tight">
+            {result.score} <span className="text-2xl text-muted-foreground font-normal">/ {result.max_score}</span>
           </div>
           <div className="flex items-center justify-center gap-3 mt-3">
-            <span className="text-2xl font-bold text-indigo-300 font-mono">{result.percentage}%</span>
+            <span className="text-2xl font-bold text-primary font-mono">{result.percentage}%</span>
             <span
               className={`px-3 py-1 rounded-full text-xs font-mono uppercase font-bold tracking-wider ${
                 result.passed
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "bg-red-500/20 text-red-400 border border-red-500/30"
+                  ? "neu-inset text-emerald-500"
+                  : "neu-inset text-destructive"
               }`}
             >
               {result.passed ? "Passed" : "Failed"}
@@ -73,22 +73,22 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
         </div>
 
         {/* Detailed Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 bg-slate-950/80 border border-slate-800/80 rounded-2xl font-mono text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl neu-inset font-mono text-xs">
           <div>
-            <span className="text-slate-500 block">Correct</span>
-            <span className="text-lg font-bold text-emerald-400">{result.correct_count}</span>
+            <span className="text-muted-foreground block text-[11px]">Correct</span>
+            <span className="text-lg font-bold text-emerald-500">{result.correct_count}</span>
           </div>
           <div>
-            <span className="text-slate-500 block">Incorrect</span>
-            <span className="text-lg font-bold text-red-400">{result.incorrect_count}</span>
+            <span className="text-muted-foreground block text-[11px]">Incorrect</span>
+            <span className="text-lg font-bold text-destructive">{result.incorrect_count}</span>
           </div>
           <div>
-            <span className="text-slate-500 block">Unanswered</span>
-            <span className="text-lg font-bold text-slate-400">{result.unanswered_count}</span>
+            <span className="text-muted-foreground block text-[11px]">Unanswered</span>
+            <span className="text-lg font-bold text-muted-foreground">{result.unanswered_count}</span>
           </div>
           <div>
-            <span className="text-slate-500 block">Time Taken</span>
-            <span className="text-lg font-bold text-indigo-300">
+            <span className="text-muted-foreground block text-[11px]">Time Taken</span>
+            <span className="text-lg font-bold text-primary">
               {minutes}m {seconds}s
             </span>
           </div>
@@ -98,14 +98,14 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
       {/* PERMITTED QUESTION REVIEW */}
       {canReview && attempt && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+          <div className="flex items-center justify-between pb-2 border-b border-border/60">
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight">Examination Review</h3>
-              <p className="text-xs text-slate-400 font-mono">
+              <h3 className="text-lg font-bold text-foreground tracking-tight">Examination Review</h3>
+              <p className="text-xs text-muted-foreground font-mono">
                 Permitted answer breakdown with explanations
               </p>
             </div>
-            <span className="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+            <span className="text-xs font-mono text-primary neu-inset-sm px-2.5 py-1 rounded-lg font-semibold">
               Teacher Permitted Review
             </span>
           </div>
@@ -119,62 +119,62 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
               return (
                 <div
                   key={q.tqId}
-                  className={`p-5 rounded-2xl border space-y-3 ${
+                  className={`p-6 rounded-2xl space-y-4 transition-all ${
                     isCorrect
-                      ? "bg-slate-900/90 border-emerald-500/40"
+                      ? "neu-raised border border-emerald-500/40"
                       : isUnanswered
-                      ? "bg-slate-900/90 border-slate-800"
-                      : "bg-slate-900/90 border-red-500/40"
+                      ? "neu-raised"
+                      : "neu-raised border border-destructive/40"
                   }`}
                 >
                   <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="font-bold text-white">Question {idx + 1}</span>
+                    <span className="font-bold text-foreground">Question {idx + 1}</span>
                     <div>
                       {isCorrect && (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <span className="text-emerald-500 font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Correct (+{q.marks} pts)
                         </span>
                       )}
                       {!isCorrect && !isUnanswered && (
-                        <span className="text-red-400 font-bold flex items-center gap-1">
+                        <span className="text-destructive font-bold flex items-center gap-1">
                           <XCircle className="w-3.5 h-3.5" /> Incorrect
                         </span>
                       )}
-                      {isUnanswered && <span className="text-slate-500">Unanswered</span>}
+                      {isUnanswered && <span className="text-muted-foreground">Unanswered</span>}
                     </div>
                   </div>
 
-                  <div className="text-white text-base font-medium">
+                  <div className="text-foreground text-base font-medium">
                     <MathText text={q.question} />
                   </div>
 
                   {/* Options */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-sans">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-sans">
                     {(["A", "B", "C", "D"] as const).map((opt) => {
                       const text =
                         opt === "A" ? q.option_a : opt === "B" ? q.option_b : opt === "C" ? q.option_c : q.option_d;
                       const isStudentChoice = studentChoice === opt;
                       const isCorrectAnswer = q.correct_answer === opt;
 
-                      let style = "bg-slate-950/60 border-slate-800/80 text-slate-400";
+                      let style = "neu-inset text-muted-foreground";
                       if (isCorrectAnswer) {
-                        style = "bg-emerald-950/40 border-emerald-500/60 text-emerald-200 font-medium";
+                        style = "neu-raised text-emerald-600 dark:text-emerald-400 border border-emerald-500/50 font-semibold";
                       } else if (isStudentChoice) {
-                        style = "bg-red-950/40 border-red-500/60 text-red-200 font-medium";
+                        style = "neu-inset text-destructive border border-destructive/50 font-semibold";
                       }
 
                       return (
-                        <div key={opt} className={`p-2.5 rounded-xl border flex items-start gap-2.5 ${style}`}>
+                        <div key={opt} className={`p-3 rounded-xl flex items-start gap-2.5 ${style}`}>
                           <span className="font-mono font-bold">{opt}.</span>
                           <div className="flex-1">
                             <MathText text={text} />
                             {isStudentChoice && (
-                              <span className="ml-2 font-mono text-[10px] text-indigo-400 uppercase font-semibold">
+                              <span className="ml-2 font-mono text-[10px] uppercase font-bold text-primary">
                                 [Your Pick]
                               </span>
                             )}
                             {isCorrectAnswer && (
-                              <span className="ml-2 font-mono text-[10px] text-emerald-400 uppercase font-semibold">
+                              <span className="ml-2 font-mono text-[10px] uppercase font-bold text-emerald-500">
                                 [Correct]
                               </span>
                             )}
@@ -186,8 +186,8 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
 
                   {/* Physics Explanation */}
                   {q.explanation && (
-                    <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 space-y-1">
-                      <span className="font-mono text-[10px] text-indigo-400 uppercase font-semibold block">
+                    <div className="p-3.5 rounded-xl neu-inset text-xs text-foreground space-y-1">
+                      <span className="font-mono text-[10px] text-primary uppercase font-bold block">
                         Explanation:
                       </span>
                       <MathText text={q.explanation} />
@@ -202,7 +202,7 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
 
       {/* If review not permitted notice */}
       {!canReview && (
-        <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl text-center text-xs text-slate-400 font-mono">
+        <div className="p-4 rounded-2xl neu-inset text-center text-xs text-muted-foreground font-mono">
           Detailed question review has been disabled for this test by the instructor.
         </div>
       )}
@@ -210,7 +210,7 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
       <div className="text-center pt-2">
         <button
           onClick={onReturn}
-          className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-indigo-600/30"
+          className="px-6 py-2.5 neu-btn-primary rounded-xl text-sm font-semibold cursor-pointer"
         >
           Return to Dashboard
         </button>

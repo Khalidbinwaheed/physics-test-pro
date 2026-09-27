@@ -131,71 +131,69 @@ export function QuestionBank() {
     setShowEditorModal(true);
   };
 
-  const openEditModal = (item: MCQItem) => {
-    setEditingMCQ(item);
+  const openEditModal = (m: MCQItem) => {
+    setEditingMCQ(m);
     setFormData({
-      chapter_id: item.chapter_id || chapters[0]?.id || "",
-      topic_id: item.topic_id || "",
-      question: item.question,
-      option_a: item.option_a,
-      option_b: item.option_b,
-      option_c: item.option_c,
-      option_d: item.option_d,
-      correct_answer: item.correct_answer,
-      explanation: item.explanation || "",
-      difficulty: item.difficulty,
-      marks: item.marks,
-      negative_marks: item.negative_marks,
-      status: item.status,
+      chapter_id: m.chapter_id,
+      topic_id: m.topic_id || "",
+      question: m.question,
+      option_a: m.option_a,
+      option_b: m.option_b,
+      option_c: m.option_c,
+      option_d: m.option_d,
+      correct_answer: m.correct_answer,
+      explanation: m.explanation || "",
+      difficulty: m.difficulty,
+      marks: m.marks,
+      negative_marks: m.negative_marks,
+      status: m.status,
     });
     setShowEditorModal(true);
   };
 
-  const insertFormulaSnippet = (snippet: string) => {
+  const insertFormulaSnippet = (formula: string) => {
     setFormData((prev) => ({
       ...prev,
-      question: prev.question + " " + snippet,
+      question: prev.question ? `${prev.question} ${formula}` : formula,
     }));
   };
 
   const handleEditorSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.question.trim()) {
-      toast.error("Question text is required.");
-      return;
-    }
-    if (!formData.option_a.trim() || !formData.option_b.trim() || !formData.option_c.trim() || !formData.option_d.trim()) {
-      toast.error("All 4 options (A, B, C, D) are required.");
+    if (!formData.question.trim() || !formData.option_a.trim() || !formData.option_b.trim()) {
+      toast.error("Question text and at least options A & B are required.");
       return;
     }
 
     try {
       if (editingMCQ) {
         portalStorage.updateMCQ(editingMCQ.id, formData);
-        toast.success(`Question updated (New version created to preserve past attempts).`);
+        toast.success(`MCQ updated (now version ${editingMCQ.version + 1})`);
       } else {
         portalStorage.createMCQ(formData);
-        toast.success("New MCQ added to Question Bank.");
+        toast.success("Physics MCQ saved to Question Bank.");
       }
       setShowEditorModal(false);
       refreshList();
     } catch (err: any) {
-      toast.error(err.message || "Failed to save question.");
+      toast.error(err.message || "Failed to save MCQ.");
     }
   };
 
-  const handleDelete = (item: MCQItem) => {
-    if (confirm("Are you sure you want to archive this question? Past test attempts will retain their frozen snapshot.")) {
-      portalStorage.deleteMCQ(item.id);
+  const handleDelete = (m: MCQItem) => {
+    if (!window.confirm("Archive this MCQ from active question bank?")) return;
+    try {
+      portalStorage.deleteMCQ(m.id);
+      toast.success("MCQ archived.");
       refreshList();
-      toast.info("Question archived.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete MCQ.");
     }
   };
 
-  // CSV Parsing & Validation
   const handleValidateCsv = () => {
     if (!importCsvText.trim()) {
-      toast.error("Please enter or paste CSV content.");
+      toast.error("Please paste CSV data.");
       return;
     }
 
@@ -207,7 +205,6 @@ export function QuestionBank() {
 
     // Skip header
     const rows = lines.slice(1).map((line) => {
-      // Simple CSV split (handles quotes roughly or comma-separated)
       const cols = line.split(",").map((c) => c.replace(/^["']|["']$/g, "").trim());
       return {
         chapter: cols[0] || "",
@@ -269,35 +266,35 @@ export function QuestionBank() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-indigo-400" />
+          <h2 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-primary" />
             <span>Centralized Question Bank</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
             KaTeX mathematical equations • Immutable attempt snapshot versioning • Bulk CSV import/export
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-medium transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 neu-btn rounded-xl text-xs font-semibold cursor-pointer text-foreground"
           >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
             <span>Bulk CSV Import</span>
           </button>
 
           <button
             onClick={exportCsv}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-medium transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 neu-btn rounded-xl text-xs font-semibold cursor-pointer text-foreground"
           >
-            <Download className="w-4 h-4 text-indigo-400" />
+            <Download className="w-4 h-4 text-primary" />
             <span>Export CSV</span>
           </button>
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-all shadow-lg shadow-indigo-600/30"
+            className="flex items-center gap-1.5 px-4 py-2 neu-btn-primary rounded-xl text-sm font-semibold cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add MCQ</span>
@@ -306,15 +303,15 @@ export function QuestionBank() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 bg-slate-900/80 border border-slate-800 rounded-2xl">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 rounded-2xl neu-raised">
         <div className="sm:col-span-5 relative">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-3.5" />
           <input
             type="text"
             value={searchTerm}
             onChange={handleSearch}
             placeholder="Search questions or formula text..."
-            className="w-full pl-10 pr-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
           />
         </div>
 
@@ -322,7 +319,7 @@ export function QuestionBank() {
           <select
             value={chapterFilter}
             onChange={(e) => handleFilterChange(e.target.value, difficultyFilter, statusFilter)}
-            className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full py-2.5 px-3 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             <option value="all">All Chapters</option>
             {chapters.map((c) => (
@@ -337,7 +334,7 @@ export function QuestionBank() {
           <select
             value={difficultyFilter}
             onChange={(e) => handleFilterChange(chapterFilter, e.target.value, statusFilter)}
-            className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full py-2.5 px-3 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             <option value="all">All Difficulties</option>
             <option value="easy">Easy</option>
@@ -350,7 +347,7 @@ export function QuestionBank() {
           <select
             value={statusFilter}
             onChange={(e) => handleFilterChange(chapterFilter, difficultyFilter, e.target.value)}
-            className="w-full py-2 px-3 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full py-2.5 px-3 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -363,56 +360,56 @@ export function QuestionBank() {
       {/* MCQs List */}
       <div className="space-y-4">
         {mcqs.length === 0 ? (
-          <div className="p-12 text-center bg-slate-900/60 border border-slate-800 rounded-2xl text-slate-500 font-mono text-xs">
+          <div className="p-12 text-center neu-inset rounded-2xl text-muted-foreground font-mono text-xs">
             No questions found matching the selected criteria.
           </div>
         ) : (
           mcqs.map((m, idx) => (
             <div
               key={m.id}
-              className="p-5 bg-slate-900/80 border border-slate-800 hover:border-slate-700/80 rounded-2xl shadow-md transition-all space-y-3"
+              className="p-6 rounded-2xl neu-raised hover:neu-raised-lg transition-all space-y-3"
             >
               {/* Question header info */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800/80 text-xs font-mono">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/60 text-xs font-mono">
                 <div className="flex items-center gap-2">
-                  <span className="bg-indigo-950/80 text-indigo-400 border border-indigo-800/60 px-2 py-0.5 rounded font-semibold">
+                  <span className="neu-inset-sm text-primary px-2.5 py-0.5 rounded-lg font-bold">
                     MCQ #{idx + 1}
                   </span>
-                  <span className="text-slate-400 font-sans font-medium">{m.chapter_name || "General"}</span>
-                  {m.topic_name && <span className="text-slate-500">• {m.topic_name}</span>}
+                  <span className="text-foreground font-sans font-semibold">{m.chapter_name || "General"}</span>
+                  {m.topic_name && <span className="text-muted-foreground">• {m.topic_name}</span>}
                 </div>
 
                 <div className="flex items-center gap-2">
                   <span
-                    className={`px-2 py-0.5 rounded capitalize ${
+                    className={`px-2.5 py-0.5 rounded-md neu-inset-sm capitalize font-bold ${
                       m.difficulty === "easy"
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        ? "text-emerald-500"
                         : m.difficulty === "medium"
-                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                        : "bg-red-500/10 text-red-400 border border-red-500/20"
+                        ? "text-amber-500"
+                        : "text-destructive"
                     }`}
                   >
                     {m.difficulty}
                   </span>
 
-                  <span className="text-slate-400">
+                  <span className="text-muted-foreground font-semibold">
                     +{m.marks} / -{m.negative_marks} marks
                   </span>
 
-                  <span className="text-slate-500">v{m.version}</span>
+                  <span className="text-muted-foreground">v{m.version}</span>
 
-                  <div className="flex items-center gap-1 pl-2 border-l border-slate-800">
+                  <div className="flex items-center gap-1.5 pl-2 border-l border-border/60">
                     <button
                       onClick={() => openEditModal(m)}
                       title="Edit MCQ"
-                      className="p-1 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"
+                      className="p-1.5 neu-btn rounded-xl text-muted-foreground hover:text-primary cursor-pointer"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(m)}
                       title="Archive MCQ"
-                      className="p-1 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded transition-colors"
+                      className="p-1.5 neu-btn rounded-xl text-muted-foreground hover:text-destructive cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -421,12 +418,12 @@ export function QuestionBank() {
               </div>
 
               {/* Question Text with KaTeX */}
-              <div className="text-white text-base font-medium leading-relaxed">
+              <div className="text-foreground text-base font-medium leading-relaxed neu-ruled p-3 rounded-xl">
                 <MathText text={m.question} />
               </div>
 
               {/* Options Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 font-sans text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 font-sans text-sm">
                 {(["A", "B", "C", "D"] as const).map((opt) => {
                   const text =
                     opt === "A" ? m.option_a : opt === "B" ? m.option_b : opt === "C" ? m.option_c : m.option_d;
@@ -435,15 +432,15 @@ export function QuestionBank() {
                   return (
                     <div
                       key={opt}
-                      className={`p-2.5 rounded-xl border flex items-start gap-2.5 transition-colors ${
+                      className={`p-3 rounded-xl flex items-start gap-2.5 transition-all ${
                         isCorrect
-                          ? "bg-emerald-950/30 border-emerald-500/50 text-emerald-200"
-                          : "bg-slate-950/60 border-slate-800/80 text-slate-300"
+                          ? "neu-raised border border-emerald-500/50 text-emerald-600 dark:text-emerald-300 font-semibold"
+                          : "neu-inset text-foreground"
                       }`}
                     >
                       <span
-                        className={`w-5 h-5 rounded-md flex items-center justify-center font-mono text-xs font-bold shrink-0 mt-0.5 ${
-                          isCorrect ? "bg-emerald-500 text-slate-950" : "bg-slate-800 text-slate-400"
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-mono text-xs font-bold shrink-0 mt-0.5 ${
+                          isCorrect ? "neu-btn-emerald text-white" : "neu-inset-sm text-muted-foreground"
                         }`}
                       >
                         {opt}
@@ -458,8 +455,8 @@ export function QuestionBank() {
 
               {/* Explanation (if present) */}
               {m.explanation && (
-                <div className="p-3 bg-slate-950/80 border border-slate-800/90 rounded-xl text-xs text-slate-400 space-y-1">
-                  <span className="font-mono uppercase text-indigo-400 font-semibold block text-[10px]">
+                <div className="p-3.5 rounded-xl neu-inset text-xs text-foreground space-y-1">
+                  <span className="font-mono uppercase text-primary font-bold block text-[10px]">
                     Explanation:
                   </span>
                   <div>
@@ -474,24 +471,27 @@ export function QuestionBank() {
 
       {/* CREATE / EDIT MCQ MODAL */}
       {showEditorModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-3xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 text-slate-100 my-8 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl neu-raised-lg rounded-3xl p-6 sm:p-7 text-foreground my-8 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-2">
-                <HelpCircle className="w-5 h-5 text-indigo-400" />
-                <h3 className="font-bold text-lg text-white">
+                <HelpCircle className="w-5 h-5 text-primary" />
+                <h3 className="font-bold text-lg text-foreground">
                   {editingMCQ ? `Edit MCQ (creates version ${editingMCQ.version + 1})` : "Create Physics MCQ"}
                 </h3>
               </div>
-              <button onClick={() => setShowEditorModal(false)} className="text-slate-400 hover:text-white p-1">
+              <button
+                onClick={() => setShowEditorModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-xl neu-btn-interactive cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleEditorSubmit} className="space-y-4 mt-4">
               {/* Formula Toolbar */}
-              <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-mono text-indigo-400">
+              <div className="p-3 rounded-2xl neu-inset space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-mono text-primary font-bold">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>KaTeX Formula Quick Inserts (Click to append):</span>
                 </div>
@@ -514,7 +514,7 @@ export function QuestionBank() {
                       key={i}
                       type="button"
                       onClick={() => insertFormulaSnippet(btn.code)}
-                      className="px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-300 rounded-md transition-colors"
+                      className="px-2.5 py-1 neu-btn rounded-lg text-foreground transition-all cursor-pointer font-semibold"
                     >
                       {btn.label}
                     </button>
@@ -525,11 +525,11 @@ export function QuestionBank() {
               {/* Chapter & Topic Selection */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">Chapter *</label>
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">Chapter *</label>
                   <select
                     value={formData.chapter_id}
                     onChange={(e) => setFormData({ ...formData, chapter_id: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     {chapters.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -540,7 +540,7 @@ export function QuestionBank() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                     Difficulty Level
                   </label>
                   <select
@@ -548,7 +548,7 @@ export function QuestionBank() {
                     onChange={(e) =>
                       setFormData({ ...formData, difficulty: e.target.value as "easy" | "medium" | "hard" })
                     }
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
                     <option value="easy">Easy</option>
                     <option value="medium">Medium</option>
@@ -559,7 +559,7 @@ export function QuestionBank() {
 
               {/* Question Text */}
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Question Text (KaTeX formulas enclosed in $...$) *
                 </label>
                 <textarea
@@ -568,17 +568,17 @@ export function QuestionBank() {
                   value={formData.question}
                   onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                   placeholder="e.g. A mass $m = 5\\text{ kg}$ is accelerated by a force $F = 25\\text{ N}$..."
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
                 />
               </div>
 
               {/* Live Preview Box */}
               {formData.question && (
-                <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-xl">
-                  <span className="text-[10px] font-mono text-indigo-400 uppercase font-semibold block mb-1">
+                <div className="p-3.5 rounded-2xl neu-inset">
+                  <span className="text-[10px] font-mono text-primary uppercase font-bold block mb-1">
                     Live Formula Render:
                   </span>
-                  <div className="text-white text-sm">
+                  <div className="text-foreground text-sm font-medium">
                     <MathText text={formData.question} />
                   </div>
                 </div>
@@ -586,14 +586,14 @@ export function QuestionBank() {
 
               {/* Options */}
               <div className="space-y-2">
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase">
                   Options (A, B, C, D) *
                 </label>
                 {(["A", "B", "C", "D"] as const).map((opt) => {
                   const key = `option_${opt.toLowerCase()}` as keyof typeof formData;
                   return (
                     <div key={opt} className="flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center font-mono text-xs font-bold text-slate-400 shrink-0">
+                      <span className="w-8 h-8 rounded-xl neu-inset flex items-center justify-center font-mono text-xs font-bold text-primary shrink-0">
                         {opt}
                       </span>
                       <input
@@ -602,7 +602,7 @@ export function QuestionBank() {
                         value={formData[key] as string}
                         onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
                         placeholder={`Option ${opt} text or formula (e.g. $5.0\\text{ m/s}^2$)`}
-                        className="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/40"
                       />
                     </div>
                   );
@@ -612,7 +612,7 @@ export function QuestionBank() {
               {/* Correct Answer & Marks */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                     Correct Answer *
                   </label>
                   <select
@@ -620,7 +620,7 @@ export function QuestionBank() {
                     onChange={(e) =>
                       setFormData({ ...formData, correct_answer: e.target.value as "A" | "B" | "C" | "D" })
                     }
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-bold text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm font-bold text-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                   >
                     <option value="A">Option A</option>
                     <option value="B">Option B</option>
@@ -630,7 +630,7 @@ export function QuestionBank() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                     Marks Awarded
                   </label>
                   <input
@@ -639,12 +639,12 @@ export function QuestionBank() {
                     min="0.5"
                     value={formData.marks}
                     onChange={(e) => setFormData({ ...formData, marks: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                     Negative Marks
                   </label>
                   <input
@@ -653,14 +653,14 @@ export function QuestionBank() {
                     min="0"
                     value={formData.negative_marks}
                     onChange={(e) => setFormData({ ...formData, negative_marks: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                   />
                 </div>
               </div>
 
               {/* Explanation */}
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Explanation (Supports KaTeX formulas)
                 </label>
                 <textarea
@@ -668,21 +668,21 @@ export function QuestionBank() {
                   value={formData.explanation}
                   onChange={(e) => setFormData({ ...formData, explanation: e.target.value })}
                   placeholder="e.g. Using Newton's Second Law $a = \\frac{F}{m} = \\frac{25}{5} = 5\\text{ m/s}^2$."
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowEditorModal(false)}
-                  className="px-4 py-2 border border-slate-700 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
+                  className="px-4 py-2.5 neu-btn rounded-xl text-sm text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-indigo-600/30"
+                  className="px-5 py-2.5 neu-btn-primary rounded-xl text-sm font-semibold cursor-pointer"
                 >
                   {editingMCQ ? "Update Question Version" : "Save to Question Bank"}
                 </button>
@@ -694,28 +694,31 @@ export function QuestionBank() {
 
       {/* BULK CSV IMPORT MODAL */}
       {showImportModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-6 text-slate-100 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl neu-raised-lg rounded-3xl p-6 sm:p-7 text-foreground animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border/60">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-bold text-lg text-white">Bulk CSV Import for MCQs</h3>
+                <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-bold text-lg text-foreground">Bulk CSV Import for MCQs</h3>
               </div>
-              <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-white p-1">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-xl neu-btn-interactive cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4 mt-4">
-              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-400 font-mono space-y-1">
-                <div className="text-indigo-400 font-semibold uppercase">Expected CSV Format (12 columns):</div>
-                <div className="overflow-x-auto text-[11px] text-slate-300">
+              <div className="p-3.5 rounded-2xl neu-inset text-xs text-muted-foreground font-mono space-y-1">
+                <div className="text-primary font-bold uppercase">Expected CSV Format (12 columns):</div>
+                <div className="overflow-x-auto text-[11px] text-foreground">
                   chapter,topic,question,option_a,option_b,option_c,option_d,correct_answer,explanation,difficulty,marks,negative_marks
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono font-medium text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-mono font-medium text-foreground uppercase mb-1">
                   Paste CSV Text
                 </label>
                 <textarea
@@ -724,20 +727,20 @@ export function QuestionBank() {
                   onChange={(e) => setImportCsvText(e.target.value)}
                   placeholder={`chapter,topic,question,option_a,option_b,option_c,option_d,correct_answer,explanation,difficulty,marks,negative_marks
 Motion and Force,Newton's Laws,Force is given by?,F = ma,F = mv,F = m/a,F = a/m,A,By second law,easy,1,0.25`}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl neu-inset text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
                 />
               </div>
 
               {/* Validation errors summary */}
               {importValidation && (
-                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2 text-xs">
+                <div className="p-3.5 rounded-2xl neu-inset space-y-2 text-xs">
                   <div className="flex items-center gap-3 font-mono">
-                    <span className="text-slate-300">Total: {importValidation.total}</span>
-                    <span className="text-emerald-400">Valid: {importValidation.valid}</span>
-                    <span className="text-red-400">Invalid: {importValidation.invalid}</span>
+                    <span className="text-foreground">Total: {importValidation.total}</span>
+                    <span className="text-emerald-500 font-bold">Valid: {importValidation.valid}</span>
+                    <span className="text-destructive font-bold">Invalid: {importValidation.invalid}</span>
                   </div>
                   {importValidation.errors.length > 0 && (
-                    <div className="max-h-28 overflow-y-auto space-y-1 text-red-400 font-mono text-[11px]">
+                    <div className="max-h-28 overflow-y-auto space-y-1 text-destructive font-mono text-[11px]">
                       {importValidation.errors.map((err, i) => (
                         <div key={i} className="flex items-start gap-1">
                           <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -749,18 +752,18 @@ Motion and Force,Newton's Laws,Force is given by?,F = ma,F = mv,F = m/a,F = a/m,
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowImportModal(false)}
-                  className="px-4 py-2 border border-slate-700 rounded-xl text-sm text-slate-300 hover:bg-slate-800"
+                  className="px-4 py-2.5 neu-btn rounded-xl text-sm text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleValidateCsv}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-emerald-600/30 flex items-center gap-2"
+                  className="px-5 py-2.5 neu-btn-emerald rounded-xl text-sm font-semibold flex items-center gap-2 cursor-pointer"
                 >
                   <Check className="w-4 h-4" />
                   <span>Validate & Import CSV</span>

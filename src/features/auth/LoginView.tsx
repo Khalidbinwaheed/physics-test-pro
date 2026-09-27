@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./auth-context";
-import { Atom, Shield, User, Lock, ArrowRight, CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
+import { ThemeToggle } from "@/lib/theme";
+import { Atom, Shield, User, Lock, ArrowRight, AlertCircle, KeyRound, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoginViewProps {
@@ -51,7 +52,6 @@ export function LoginView({ onSuccess }: LoginViewProps) {
     setTeacherError("");
     if (!teacherEmail.trim() || !teacherPassword.trim()) {
       setTeacherError("Please enter both email and password.");
-      return;
     }
     setTeacherLoading(true);
     try {
@@ -70,50 +70,63 @@ export function LoginView({ onSuccess }: LoginViewProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white relative overflow-hidden font-sans">
-      {/* Background ambient glow */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen flex flex-col justify-between bg-background text-foreground selection:bg-primary selection:text-white relative overflow-hidden font-sans transition-colors duration-200">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md px-6 py-4 flex items-center justify-between z-10">
+      <header className="neu-header px-4 sm:px-8 py-3.5 flex items-center justify-between z-10">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 p-0.5 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <Atom className="w-5 h-5 text-indigo-400 animate-spin-slow" />
+          <div className="w-10 h-10 rounded-xl neu-raised flex items-center justify-center p-1">
+            <div className="w-full h-full rounded-lg neu-inset flex items-center justify-center">
+              <Atom className="w-5 h-5 text-primary animate-pulse" />
             </div>
           </div>
           <div>
-            <h1 className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
+            <h1 className="font-bold text-base sm:text-lg text-foreground tracking-tight flex items-center gap-2">
               Physics MCQ Examination Portal
             </h1>
-            <p className="text-xs text-slate-400 font-mono">Academic Assessment System • Secure & Production Ready</p>
+            <p className="text-xs text-muted-foreground font-mono hidden sm:block">
+              Neumorphic Assessment System • Secure & Production Ready
+            </p>
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs font-mono bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-full text-slate-300">
-          <Shield className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Strict Role-Based Access • Public Registration Disabled</span>
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 text-xs font-mono neu-inset-sm px-3 py-1.5 rounded-full text-muted-foreground">
+            <Shield className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Strict Role-Based Access</span>
+          </div>
+
+          <ThemeToggle />
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 z-10">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 z-10 my-4 sm:my-8">
         <div className="w-full max-w-md">
-          {/* Card Container */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-xl">
-            {/* Tabs */}
-            <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950/80 border border-slate-800/80 rounded-xl mb-6">
+          {/* Neumorphic Card Container */}
+          <div className="neu-raised-lg rounded-3xl p-6 sm:p-8 relative">
+            {/* Soft decorative badge */}
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                Laboratory Portal
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md neu-inset-sm text-primary font-bold">
+                v2.0 Neumorphic
+              </span>
+            </div>
+
+            {/* Recessed Tabs Switcher */}
+            <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-2xl neu-inset mb-6">
               <button
                 type="button"
                 onClick={() => {
                   setActiveTab("student");
                   setStudentError("");
                 }}
-                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
                   activeTab === "student"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "neu-btn-primary shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -126,10 +139,10 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                   setActiveTab("teacher");
                   setTeacherError("");
                 }}
-                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 cursor-pointer ${
                   activeTab === "teacher"
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/30"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "neu-btn-emerald shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Shield className="w-4 h-4" />
@@ -141,25 +154,25 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             {activeTab === "student" && (
               <form onSubmit={handleStudentSubmit} className="space-y-4">
                 <div className="text-center mb-5">
-                  <h2 className="text-xl font-bold text-white tracking-tight">Student Portal</h2>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">Student Portal</h2>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Enter the Login ID and password provided by your teacher
                   </p>
                 </div>
 
                 {studentError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-2.5 text-xs text-red-400">
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-start gap-2.5 text-xs text-destructive neu-inset-sm">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{studentError}</span>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase tracking-wider mb-1.5">
                     Student Login ID
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 font-mono text-xs">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground font-mono text-xs font-bold">
                       ID
                     </div>
                     <input
@@ -167,18 +180,18 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                       value={studentLoginId}
                       onChange={(e) => setStudentLoginId(e.target.value)}
                       placeholder="e.g. PHY-001"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono text-sm transition-shadow"
                       autoComplete="username"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase tracking-wider mb-1.5">
                     Password
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                       <Lock className="w-4 h-4" />
                     </div>
                     <input
@@ -186,7 +199,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                       value={studentPassword}
                       onChange={(e) => setStudentPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm font-mono"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 text-sm font-mono transition-shadow"
                       autoComplete="current-password"
                     />
                   </div>
@@ -195,22 +208,22 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 <button
                   type="submit"
                   disabled={studentLoading}
-                  className="w-full mt-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="w-full mt-3 py-3 px-4 neu-btn-primary font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm cursor-pointer"
                 >
                   {studentLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Login to Portal</span>
+                      <span>Login to Examination Portal</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
 
                 {/* Quick Demo Credentials helper */}
-                <div className="pt-4 border-t border-slate-800 text-xs text-slate-400">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-500 uppercase mb-2">
-                    <KeyRound className="w-3.5 h-3.5" />
+                <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-2 font-semibold">
+                    <KeyRound className="w-3.5 h-3.5 text-primary" />
                     <span>Quick Demo Credentials (Click to fill)</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
@@ -221,10 +234,10 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                         setStudentPassword("StudentPass123!");
                         setStudentError("");
                       }}
-                      className="p-2 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 rounded-lg text-left transition-colors"
+                      className="p-2.5 rounded-xl neu-btn-interactive text-left transition-all cursor-pointer"
                     >
-                      <div className="font-mono text-indigo-400 font-semibold">PHY-001</div>
-                      <div className="text-[10px] text-slate-400">Muhammad Ali</div>
+                      <div className="font-mono text-primary font-bold">PHY-001</div>
+                      <div className="text-[10px] text-muted-foreground">Muhammad Ali</div>
                     </button>
                     <button
                       type="button"
@@ -233,10 +246,10 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                         setStudentPassword("StudentPass123!");
                         setStudentError("");
                       }}
-                      className="p-2 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 rounded-lg text-left transition-colors"
+                      className="p-2.5 rounded-xl neu-btn-interactive text-left transition-all cursor-pointer"
                     >
-                      <div className="font-mono text-indigo-400 font-semibold">PHY-002</div>
-                      <div className="text-[10px] text-slate-400">Sara Ahmed</div>
+                      <div className="font-mono text-primary font-bold">PHY-002</div>
+                      <div className="text-[10px] text-muted-foreground">Sara Ahmed</div>
                     </button>
                   </div>
                 </div>
@@ -247,25 +260,25 @@ export function LoginView({ onSuccess }: LoginViewProps) {
             {activeTab === "teacher" && (
               <form onSubmit={handleTeacherSubmit} className="space-y-4">
                 <div className="text-center mb-5">
-                  <h2 className="text-xl font-bold text-white tracking-tight">Instructor / Admin Portal</h2>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <h2 className="text-xl font-bold text-foreground tracking-tight">Instructor / Admin Portal</h2>
+                  <p className="text-xs text-muted-foreground mt-1">
                     Manage students, chapters, question bank, and tests
                   </p>
                 </div>
 
                 {teacherError && (
-                  <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-2.5 text-xs text-red-400">
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-2xl flex items-start gap-2.5 text-xs text-destructive neu-inset-sm">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{teacherError}</span>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase tracking-wider mb-1.5">
                     Email or Username
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                       <User className="w-4 h-4" />
                     </div>
                     <input
@@ -273,18 +286,18 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                       value={teacherEmail}
                       onChange={(e) => setTeacherEmail(e.target.value)}
                       placeholder="teacher@physlab.local"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-mono"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-mono transition-shadow"
                       autoComplete="username"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono font-medium text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-mono font-medium text-foreground uppercase tracking-wider mb-1.5">
                     Password
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
                       <Lock className="w-4 h-4" />
                     </div>
                     <input
@@ -292,7 +305,7 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                       value={teacherPassword}
                       onChange={(e) => setTeacherPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-3 py-2.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm font-mono"
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 text-sm font-mono transition-shadow"
                       autoComplete="current-password"
                     />
                   </div>
@@ -301,22 +314,22 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                 <button
                   type="submit"
                   disabled={teacherLoading}
-                  className="w-full mt-2 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  className="w-full mt-3 py-3 px-4 neu-btn-emerald font-medium rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm cursor-pointer"
                 >
                   {teacherLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
                     <>
-                      <span>Sign In as Teacher</span>
+                      <span>Sign In as Instructor</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
 
                 {/* Quick Demo Credentials helper */}
-                <div className="pt-4 border-t border-slate-800 text-xs text-slate-400">
-                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-500 uppercase mb-2">
-                    <KeyRound className="w-3.5 h-3.5" />
+                <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground uppercase mb-2 font-semibold">
+                    <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
                     <span>Instructor Credentials (Click to fill)</span>
                   </div>
                   <button
@@ -326,13 +339,13 @@ export function LoginView({ onSuccess }: LoginViewProps) {
                       setTeacherPassword("AdminPass123!");
                       setTeacherError("");
                     }}
-                    className="w-full p-2 bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 rounded-lg text-left transition-colors flex items-center justify-between"
+                    className="w-full p-2.5 rounded-xl neu-btn-interactive text-left transition-all flex items-center justify-between cursor-pointer"
                   >
                     <div>
-                      <div className="font-mono text-emerald-400 font-semibold">teacher@physlab.local</div>
-                      <div className="text-[10px] text-slate-400">Prof. Khalid Mehmood</div>
+                      <div className="font-mono text-emerald-500 font-bold">teacher@physlab.local</div>
+                      <div className="text-[10px] text-muted-foreground">Prof. Khalid Mehmood</div>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                    <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-md neu-inset-sm">
                       Auto-fill
                     </span>
                   </button>
@@ -342,15 +355,15 @@ export function LoginView({ onSuccess }: LoginViewProps) {
           </div>
 
           {/* Footer Notice */}
-          <div className="mt-6 text-center text-xs text-slate-500 space-y-1">
-            <p>Strict Security Policy: No public registration is permitted.</p>
-            <p className="font-mono text-[11px]">Physics MCQ Examination Portal • Version 2.0</p>
+          <div className="mt-6 text-center text-xs text-muted-foreground space-y-1">
+            <p>Strict Security Policy: Public registration is disabled.</p>
+            <p className="font-mono text-[11px]">Physics MCQ Examination Portal • Soft UI Edition</p>
           </div>
         </div>
       </main>
 
       {/* Subtle Footer Bar */}
-      <footer className="border-t border-slate-900 bg-slate-950/60 px-6 py-3 text-center text-[11px] text-slate-600 font-mono">
+      <footer className="neu-header py-3 px-6 text-center text-[11px] text-muted-foreground font-mono">
         All assessment scoring & timers are verified and calculated on the server.
       </footer>
     </div>

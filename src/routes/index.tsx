@@ -44,10 +44,10 @@ function PortalApp() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 font-mono text-xs">
-        <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span>Initializing Physics Portal...</span>
+      <div className="min-h-screen bg-background flex items-center justify-center text-foreground font-mono text-xs">
+        <div className="p-6 rounded-2xl neu-raised flex items-center gap-3">
+          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="font-semibold">Initializing Physics Portal...</span>
         </div>
       </div>
     );
@@ -76,7 +76,7 @@ function PortalApp() {
   // Viewing exam result
   if (role === "student" && student && viewingResult) {
     return (
-      <div className="min-h-screen bg-slate-950 py-8">
+      <div className="min-h-screen bg-background text-foreground py-8">
         <ExamResultView
           result={viewingResult}
           onReturn={() => {

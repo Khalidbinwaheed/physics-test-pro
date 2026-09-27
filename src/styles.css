@@ -2,11 +2,11 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Physics MCQ Examination Portal — "Lab Notebook" design system.
- * All colours are oklch tokens. Components must never hardcode colours.
+ * Physics MCQ Examination Portal — Neumorphism ("Soft UI") Design System.
+ * Supports pristine daylight light mode & deep obsidian dark mode.
  */
 
 @theme inline {
@@ -48,6 +48,9 @@
   --color-bad: var(--bad);
   --color-panel: var(--panel);
 
+  --color-neu-bg: var(--neu-bg);
+  --color-neu-surface: var(--neu-surface);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -56,44 +59,105 @@
 }
 
 :root {
-  --radius: 0.75rem;
-  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-technical: "Space Mono", ui-monospace, monospace;
+  --radius: 0.85rem;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-technical: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --ink: oklch(0.192 0.032 261);
-  --ink-soft: oklch(0.375 0.049 264);
-  --line: oklch(0.888 0.012 258);
-  --brand: oklch(0.424 0.112 259);
-  --brand-deep: oklch(0.334 0.099 262);
-  --good: oklch(0.52 0.132 150);
-  --bad: oklch(0.505 0.196 27);
-  --panel: oklch(1 0 0);
+  /* Neumorphic Light Theme Palettes */
+  --neu-bg: #e9eef5;
+  --neu-surface: #e9eef5;
+  --neu-surface-hover: #ebf0f8;
+  --neu-shadow-dark: #c1c8d7;
+  --neu-shadow-light: #ffffff;
+  --neu-inset-dark: #c4cbd9;
+  --neu-inset-light: #ffffff;
+  --neu-border: rgba(255, 255, 255, 0.75);
+  --neu-border-subtle: rgba(193, 200, 215, 0.45);
+  --neu-glow-primary: 0 8px 20px -2px rgba(79, 70, 229, 0.35);
 
-  --background: oklch(0.951 0.008 260);
-  --foreground: var(--ink);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--ink);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--ink);
-  --primary: var(--brand);
-  --primary-foreground: oklch(0.985 0.002 260);
-  --secondary: oklch(0.932 0.011 259);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.932 0.011 259);
-  --muted-foreground: oklch(0.552 0.029 258);
-  --accent: oklch(0.552 0.131 62);
-  --accent-foreground: oklch(0.99 0.005 80);
-  --destructive: var(--bad);
-  --destructive-foreground: oklch(0.985 0.002 260);
-  --border: var(--line);
-  --input: var(--line);
-  --ring: var(--brand);
+  --background: #e9eef5;
+  --foreground: #1e293b;
+  --card: #e9eef5;
+  --card-foreground: #1e293b;
+  --popover: #ebf0f8;
+  --popover-foreground: #1e293b;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #dce3ee;
+  --secondary-foreground: #334155;
+  --muted: #e1e7f0;
+  --muted-foreground: #64748b;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #d2dbe7;
+  --input: #d2dbe7;
+  --ring: #4f46e5;
 
-  --chart-1: oklch(0.424 0.112 259);
-  --chart-2: oklch(0.552 0.131 62);
-  --chart-3: oklch(0.52 0.132 150);
-  --chart-4: oklch(0.6 0.09 230);
-  --chart-5: oklch(0.505 0.196 27);
+  --ink: #1e293b;
+  --ink-soft: #475569;
+  --line: #d2dbe7;
+  --brand: #4f46e5;
+  --brand-deep: #4338ca;
+  --good: #10b981;
+  --bad: #ef4444;
+  --panel: #e9eef5;
+
+  --chart-1: #4f46e5;
+  --chart-2: #06b6d4;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+}
+
+.dark {
+  /* Neumorphic Dark Theme (Deep Obsidian Graphite) */
+  --neu-bg: #151821;
+  --neu-surface: #151821;
+  --neu-surface-hover: #191c27;
+  --neu-shadow-dark: rgba(0, 0, 0, 0.72);
+  --neu-shadow-light: rgba(255, 255, 255, 0.045);
+  --neu-inset-dark: rgba(0, 0, 0, 0.78);
+  --neu-inset-light: rgba(255, 255, 255, 0.04);
+  --neu-border: rgba(255, 255, 255, 0.06);
+  --neu-border-subtle: rgba(255, 255, 255, 0.035);
+  --neu-glow-primary: 0 8px 24px -2px rgba(99, 102, 241, 0.45);
+
+  --background: #151821;
+  --foreground: #f1f5f9;
+  --card: #151821;
+  --card-foreground: #f1f5f9;
+  --popover: #191d29;
+  --popover-foreground: #f1f5f9;
+  --primary: #6366f1;
+  --primary-foreground: #ffffff;
+  --secondary: #1e2230;
+  --secondary-foreground: #cbd5e1;
+  --muted: #1d212d;
+  --muted-foreground: #94a3b8;
+  --accent: #818cf8;
+  --accent-foreground: #ffffff;
+  --destructive: #f43f5e;
+  --destructive-foreground: #ffffff;
+  --border: #232736;
+  --input: #232736;
+  --ring: #6366f1;
+
+  --ink: #f8fafc;
+  --ink-soft: #94a3b8;
+  --line: #232736;
+  --brand: #6366f1;
+  --brand-deep: #4f46e5;
+  --good: #10b981;
+  --bad: #f43f5e;
+  --panel: #151821;
+
+  --chart-1: #6366f1;
+  --chart-2: #22d3ee;
+  --chart-3: #34d399;
+  --chart-4: #fbbf24;
+  --chart-5: #f43f5e;
 }
 
 @layer base {
@@ -103,12 +167,11 @@
 
   body {
     background-color: var(--color-background);
-    background-image:
-      radial-gradient(120% 90% at 12% 0%, color-mix(in oklab, var(--brand) 16%, transparent), transparent 55%),
-      radial-gradient(120% 90% at 100% 100%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 50%);
-    background-attachment: fixed;
     color: var(--color-foreground);
+    min-height: 100vh;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   :focus-visible {
@@ -117,28 +180,157 @@
   }
 }
 
-/* Frosted notebook panels — the core surface of the design */
-@utility panel {
-  background: color-mix(in oklab, var(--panel) 62%, transparent);
-  backdrop-filter: blur(14px) saturate(150%);
-  -webkit-backdrop-filter: blur(14px) saturate(150%);
+/* ==========================================================================
+   NEUMORPHISM CORE UTILITIES
+   ========================================================================== */
+
+/* Raised Surfaces (Outset / Extruded) */
+.neu-raised {
+  background-color: var(--neu-surface);
+  box-shadow: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  border: 1px solid var(--neu-border);
 }
 
-@utility panel-strong {
-  background: color-mix(in oklab, var(--panel) 84%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+.neu-raised-sm {
+  background-color: var(--neu-surface);
+  box-shadow: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  border: 1px solid var(--neu-border);
 }
 
-/* Faint ruled-notebook lines behind exam question sheets */
-@utility ruled {
+.neu-raised-lg {
+  background-color: var(--neu-surface);
+  box-shadow: 10px 10px 24px var(--neu-shadow-dark), -10px -10px 24px var(--neu-shadow-light);
+  border: 1px solid var(--neu-border);
+}
+
+/* Inset / Sunken Surfaces (Debossed) */
+.neu-inset {
+  background-color: var(--neu-surface);
+  box-shadow: inset 3px 3px 6px var(--neu-inset-dark), inset -3px -3px 6px var(--neu-inset-light);
+  border: 1px solid var(--neu-border-subtle);
+}
+
+.neu-inset-sm {
+  background-color: var(--neu-surface);
+  box-shadow: inset 2px 2px 4px var(--neu-inset-dark), inset -2px -2px 4px var(--neu-inset-light);
+  border: 1px solid var(--neu-border-subtle);
+}
+
+.neu-inset-deep {
+  background-color: var(--neu-surface);
+  box-shadow: inset 4px 4px 8px var(--neu-inset-dark), inset -4px -4px 8px var(--neu-inset-light);
+  border: 1px solid var(--neu-border-subtle);
+}
+
+/* Tactile Interactive Buttons */
+.neu-btn {
+  background-color: var(--neu-surface);
+  box-shadow: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  border: 1px solid var(--neu-border);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.neu-btn:hover {
+  box-shadow: 5px 5px 12px var(--neu-shadow-dark), -5px -5px 12px var(--neu-shadow-light);
+  transform: translateY(-1px);
+}
+
+.neu-btn:active {
+  box-shadow: inset 2px 2px 5px var(--neu-inset-dark), inset -2px -2px 5px var(--neu-inset-light);
+  transform: translateY(1px);
+}
+
+.neu-btn-interactive {
+  background-color: var(--neu-surface);
+  box-shadow: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  border: 1px solid var(--neu-border);
+  transition: all 0.15s ease;
+}
+
+.neu-btn-interactive:hover {
+  box-shadow: 4px 4px 9px var(--neu-shadow-dark), -4px -4px 9px var(--neu-shadow-light);
+  transform: translateY(-0.5px);
+}
+
+.neu-btn-interactive:active {
+  box-shadow: inset 2px 2px 4px var(--neu-inset-dark), inset -2px -2px 4px var(--neu-inset-light);
+  transform: translateY(0.5px);
+}
+
+/* Colored Neumorphic Action Buttons */
+.neu-btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  color: #ffffff;
+  box-shadow: 4px 4px 12px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light), var(--neu-glow-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-btn-primary:hover {
+  background: linear-gradient(135deg, #5b52f5 0%, #4a3fd8 100%);
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 16px var(--neu-shadow-dark), -3px -3px 10px var(--neu-shadow-light), 0 10px 24px -2px rgba(79, 70, 229, 0.5);
+}
+
+.neu-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.2);
+}
+
+.neu-btn-emerald {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  box-shadow: 4px 4px 12px var(--neu-shadow-dark), -3px -3px 8px var(--neu-shadow-light), 0 8px 18px -2px rgba(5, 150, 105, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.neu-btn-emerald:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  transform: translateY(-1px);
+}
+
+.neu-btn-emerald:active {
+  transform: translateY(1px);
+  box-shadow: inset 2px 2px 6px rgba(0, 0, 0, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.2);
+}
+
+/* Neumorphic Navigation Bar / Header */
+.neu-header {
+  background-color: var(--neu-surface);
+  box-shadow: 0 4px 14px var(--neu-shadow-dark);
+  border-bottom: 1px solid var(--neu-border);
+}
+
+/* Exam Ruled Paper Sheet Effect */
+.neu-ruled {
   background-image: repeating-linear-gradient(
     180deg,
     transparent 0 27px,
-    color-mix(in oklab, var(--brand) 10%, transparent) 27px 28px
+    var(--neu-border-subtle) 27px 28px
   );
 }
 
-@utility tabnum {
-  font-variant-numeric: tabular-nums;
+/* Custom Neumorphic Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--neu-surface);
+  box-shadow: inset 1px 1px 3px var(--neu-inset-dark), inset -1px -1px 3px var(--neu-inset-light);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 9999px;
+  border: 2px solid var(--neu-surface);
+  opacity: 0.5;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
 }
