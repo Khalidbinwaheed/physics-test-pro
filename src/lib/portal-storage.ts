@@ -1114,6 +1114,12 @@ class PortalStorage {
     return attempt;
   }
 
+  recordAnswer(attemptId: string, tqId: string, option: "A" | "B" | "C" | "D" | null) {
+    const att = this.attempts.find((a) => a.id === attemptId);
+    if (!att) throw new Error("Attempt not found.");
+    return this.saveAnswer(attemptId, att.student_id, tqId, option);
+  }
+
   saveAnswer(attemptId: string, studentId: string, tqId: string, option: "A" | "B" | "C" | "D" | null) {
     const att = this.attempts.find((a) => a.id === attemptId);
     if (!att) throw new Error("Attempt not found.");
@@ -1130,10 +1136,10 @@ class PortalStorage {
     return { success: true, savedAnswer: option };
   }
 
-  submitAttempt(attemptId: string, studentId: string, autoSubmitted = false): ResultItem {
+  submitAttempt(attemptId: string, studentId?: string, autoSubmitted = false): ResultItem {
     const att = this.attempts.find((a) => a.id === attemptId);
     if (!att) throw new Error("Attempt not found.");
-    if (att.student_id !== studentId) throw new Error("Unauthorized.");
+    if (studentId && att.student_id !== studentId) throw new Error("Unauthorized.");
 
     // If already submitted, return the existing result
     if (att.status === "submitted") {

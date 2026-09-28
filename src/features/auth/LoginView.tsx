@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "./auth-context";
 import { ThemeToggle } from "@/lib/theme";
-import { Atom, Shield, User, Lock, ArrowRight, AlertCircle, Sparkles } from "lucide-react";
+import { Atom, Shield, User, Lock, ArrowRight, AlertCircle, Sparkles, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 interface LoginViewProps {

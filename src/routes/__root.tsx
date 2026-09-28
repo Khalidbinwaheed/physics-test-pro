@@ -53,6 +53,12 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
+        {error && (
+          <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-xs font-mono text-destructive text-left overflow-auto max-h-40">
+            <div className="font-semibold">{error.name || "Error"}: {error.message || String(error)}</div>
+          </div>
+        )}
+
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -132,7 +138,8 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const context = Route.useRouteContext();
+  const queryClient = context?.queryClient ?? new QueryClient();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -145,4 +152,5 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
 
