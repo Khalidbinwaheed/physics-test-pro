@@ -311,13 +311,13 @@ class SupabaseService {
       const { error } = await supabase.from("tests").insert({
         id: test.id,
         title: test.title,
-        description: test.description,
-        chapter_id: test.chapter_id,
+        description: test.description || null,
+        chapter_id: test.chapter_id || null,
         duration_minutes: test.duration_minutes,
         passing_percentage: test.passing_percentage,
         negative_marking: test.negative_marking,
-        starts_at: test.starts_at,
-        ends_at: test.ends_at,
+        starts_at: test.starts_at || null,
+        ends_at: test.ends_at || null,
         max_attempts: test.max_attempts,
         randomize_questions: test.randomize_questions,
         randomize_options: test.randomize_options,
@@ -331,6 +331,18 @@ class SupabaseService {
         console.error("Supabase insertTest error:", error);
         return false;
       }
+      
+      if (test.question_ids && test.question_ids.length > 0) {
+        const tqInserts = test.question_ids.map((mcqId, index) => ({
+          test_id: test.id,
+          mcq_id: mcqId,
+          position: index + 1,
+          marks: 1, // Defaulting marks here for simplicity
+          negative_marks: test.negative_marking ? 0.25 : 0
+        }));
+        await supabase.from("test_questions").insert(tqInserts).catch(console.error);
+      }
+      
       return true;
     } catch (e) {
       console.error("Supabase insertTest catch error:", e);
@@ -371,8 +383,8 @@ class SupabaseService {
         test_id: assignment.test_id,
         student_id: assignment.student_id,
         assigned_at: assignment.assigned_at,
-        available_from: assignment.available_from,
-        available_until: assignment.available_until,
+        available_from: assignment.available_from || null,
+        available_until: assignment.available_until || null,
         max_attempts: assignment.max_attempts,
         status: assignment.status,
       });
@@ -421,9 +433,9 @@ class SupabaseService {
         student_id: attempt.student_id,
         attempt_number: attempt.attempt_number,
         status: attempt.status,
-        started_at: attempt.started_at,
-        expires_at: attempt.expires_at,
-        submitted_at: attempt.submitted_at,
+        started_at: attempt.started_at || null,
+        expires_at: attempt.expires_at || null,
+        submitted_at: attempt.submitted_at || null,
         questions: attempt.questions,
       });
       if (error) console.error("Supabase insertAttempt error:", error);

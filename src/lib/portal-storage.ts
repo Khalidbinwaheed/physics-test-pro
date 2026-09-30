@@ -21,6 +21,7 @@ import {
 } from "./portal-seed-data";
 import { normalizeLoginId, studentEmailFor } from "./login-id";
 import { supabaseService } from "./supabase-service";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface TeacherUser {
   id: string;
@@ -601,6 +602,10 @@ class PortalStorage {
       resourceId: item.id,
       meta: { name: item.name, section: item.section },
     });
+    
+    this.persist();
+    supabaseService.insertClass(item).catch(() => {});
+    
     return item;
   }
 
@@ -631,6 +636,18 @@ class PortalStorage {
       resourceId: item.id,
       meta: { name: item.name },
     });
+    
+    this.persist();
+    // Use an explicit insert if supabaseService doesn't accept ID by default
+    supabase.from("chapters").insert({
+      id: item.id,
+      name: item.name,
+      chapter_number: item.chapter_number,
+      description: item.description,
+      status: item.status,
+      display_order: item.display_order
+    }).catch(() => {});
+
     return item;
   }
 
@@ -663,6 +680,23 @@ class PortalStorage {
       created_at: new Date().toISOString(),
     };
     this.topics.push(item);
+    
+    this.audit({
+      actorLabel: `Teacher: ${this.teacher.full_name}`,
+      action: "topic_created",
+      resource: "topics",
+      resourceId: item.id,
+      meta: { name: item.name },
+    });
+    
+    this.persist();
+    supabase.from("topics").insert({
+      id: item.id,
+      chapter_id: item.chapter_id,
+      name: item.name,
+      status: item.status
+    }).catch(() => {});
+
     return item;
   }
 
@@ -718,6 +752,26 @@ class PortalStorage {
       resource: "mcqs",
       resourceId: item.id,
     });
+    
+    this.persist();
+    supabase.from("mcqs").insert({
+      id: item.id,
+      chapter_id: item.chapter_id || null,
+      topic_id: item.topic_id || null,
+      question: item.question,
+      option_a: item.option_a,
+      option_b: item.option_b,
+      option_c: item.option_c,
+      option_d: item.option_d,
+      correct_answer: item.correct_answer,
+      explanation: item.explanation || null,
+      difficulty: item.difficulty,
+      marks: item.marks,
+      negative_marks: item.negative_marks,
+      status: item.status,
+      version: item.version
+    }).catch(() => {});
+
     return item;
   }
 
