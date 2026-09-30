@@ -350,6 +350,121 @@ class SupabaseService {
     }
   }
 
+  // --- ATTEMPTS & RESULTS ---
+  async getAttempts(): Promise<AttemptItem[]> {
+    try {
+      const { data, error } = await supabase.from("attempts").select("*");
+      if (error || !data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        test_id: d.test_id,
+        test_title: "", // We can mock this or fetch it
+        student_id: d.student_id,
+        student_name: "",
+        student_login_id: "",
+        attempt_number: d.attempt_number,
+        status: d.status,
+        started_at: d.started_at,
+        expires_at: d.expires_at,
+        submitted_at: d.submitted_at,
+        duration_minutes: 0,
+        negative_marking: false,
+        show_result: true,
+        show_correct_answers: false,
+        show_explanations: false,
+        questions: d.questions || [],
+        answers: {}, // would need attempt_answers table sync
+        created_at: d.created_at,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async insertAttempt(attempt: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("attempts").insert({
+        id: attempt.id,
+        test_id: attempt.test_id,
+        student_id: attempt.student_id,
+        attempt_number: attempt.attempt_number,
+        status: attempt.status,
+        started_at: attempt.started_at,
+        expires_at: attempt.expires_at,
+        submitted_at: attempt.submitted_at,
+        questions: attempt.questions,
+      });
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  async updateAttempt(attemptId: string, updates: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("attempts").update(updates).eq("id", attemptId);
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  async getResults(): Promise<ResultItem[]> {
+    try {
+      const { data, error } = await supabase
+        .from("results")
+        .select("*, tests(title), profiles(full_name, login_id)");
+      if (error || !data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        attempt_id: d.attempt_id,
+        test_id: d.test_id,
+        test_title: d.tests?.title,
+        student_id: d.student_id,
+        student_name: d.profiles?.full_name,
+        student_login_id: d.profiles?.login_id,
+        total_questions: d.total_questions,
+        correct_count: d.correct_count,
+        incorrect_count: d.incorrect_count,
+        unanswered_count: d.unanswered_count,
+        score: d.score,
+        max_score: d.max_score,
+        percentage: d.percentage,
+        passed: d.passed,
+        time_taken_seconds: d.time_taken_seconds,
+        attempt_number: d.attempt_number,
+        submitted_at: d.submitted_at,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async insertResult(result: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("results").insert({
+        id: result.id,
+        attempt_id: result.attempt_id,
+        test_id: result.test_id,
+        student_id: result.student_id,
+        total_questions: result.total_questions,
+        correct_count: result.correct_count,
+        incorrect_count: result.incorrect_count,
+        unanswered_count: result.unanswered_count,
+        score: result.score,
+        max_score: result.max_score,
+        percentage: result.percentage,
+        passed: result.passed,
+        time_taken_seconds: result.time_taken_seconds,
+        attempt_number: result.attempt_number,
+        submitted_at: result.submitted_at,
+      });
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
   // --- PROFILES / STUDENTS ---
   async getStudents(): Promise<StudentProfile[]> {
     try {

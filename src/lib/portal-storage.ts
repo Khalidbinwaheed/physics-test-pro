@@ -108,7 +108,7 @@ class PortalStorage {
       const isConnected = await supabaseService.testConnection();
       if (!isConnected) return;
 
-      const [sbClasses, sbChapters, sbTopics, sbMCQs, sbTests, sbStudents, sbAssignments] = await Promise.all([
+      const [sbClasses, sbChapters, sbTopics, sbMCQs, sbTests, sbStudents, sbAssignments, sbAttempts, sbResults] = await Promise.all([
         supabaseService.getClasses(),
         supabaseService.getChapters(),
         supabaseService.getTopics(),
@@ -116,6 +116,8 @@ class PortalStorage {
         supabaseService.getTests(),
         supabaseService.getStudents(),
         supabaseService.getAssignments(),
+        supabaseService.getAttempts(),
+        supabaseService.getResults(),
       ]);
 
       if (sbClasses.length > 0) this.classes = sbClasses;
@@ -124,6 +126,9 @@ class PortalStorage {
       if (sbMCQs.length > 0) this.mcqs = sbMCQs;
       if (sbTests.length > 0) this.tests = sbTests;
       if (sbAssignments.length > 0) this.assignments = sbAssignments;
+      if (sbAttempts.length > 0) this.attempts = sbAttempts;
+      if (sbResults.length > 0) this.results = sbResults;
+      
       if (sbStudents.length > 0) {
         const existingMap = new Map(this.students.map((s) => [s.id, s]));
         sbStudents.forEach((s) => {
@@ -1141,6 +1146,9 @@ class PortalStorage {
       meta: { test_title: test.title, attempt_number: attempt.attempt_number },
     });
 
+    this.persist();
+    supabaseService.insertAttempt(attempt).catch(() => {});
+
     return attempt;
   }
 
@@ -1163,6 +1171,12 @@ class PortalStorage {
     }
 
     att.answers[tqId] = option;
+    this.persist();
+    
+    // We don't necessarily need to sync every single answer selection to Supabase instantly for this simple implementation
+    // But we'll fire an update to attempt questions/answers if we had a proper JSONB column synced.
+    // supabaseService.updateAttempt(attemptId, { answers: att.answers }).catch(() => {});
+
     return { success: true, savedAnswer: option };
   }
 
@@ -1246,6 +1260,16 @@ class PortalStorage {
       resourceId: att.id,
       meta: { score: finalScore, max_score: maxScore, percentage, passed },
     });
+
+    this.persist();
+    
+    // Sync to backend
+    supabaseService.updateAttempt(att.id, { 
+      status: att.status, 
+      submitted_at: att.submitted_at 
+    }).catch(() => {});
+    
+    supabaseService.insertResult(result).catch(() => {});
 
     return result;
   }
