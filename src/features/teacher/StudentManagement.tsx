@@ -153,7 +153,7 @@ export function StudentManagement() {
         isOpen: true,
         studentName: student.full_name,
         loginId: student.login_id,
-        temporaryPassword: res.temporaryPassword,
+        temporaryPassword: res,
         isReset: true,
       });
       refreshStudents();
@@ -165,7 +165,7 @@ export function StudentManagement() {
   const handleToggleStatus = (student: StudentProfile) => {
     const newStatus = student.status === "active" ? "disabled" : "active";
     try {
-      portalStorage.updateStudent(student.id, { status: newStatus });
+      portalStorage.setStudentStatus(student.id, newStatus);
       toast.success(`Student status updated to ${newStatus}`);
       refreshStudents();
     } catch (err: any) {
@@ -178,7 +178,7 @@ export function StudentManagement() {
       return;
     }
     try {
-      portalStorage.updateStudent(student.id, { status: "archived" });
+      portalStorage.setStudentStatus(student.id, "archived");
       toast.success("Student moved to archive.");
       refreshStudents();
     } catch (err: any) {

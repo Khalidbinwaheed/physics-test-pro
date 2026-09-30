@@ -139,8 +139,8 @@ class SupabaseService {
         description: data.description || "",
         status: data.status,
         display_order: data.display_order,
-        topics_count: 0,
-        questions_count: 0,
+        topic_count: 0,
+        mcq_count: 0,
         created_at: data.created_at,
       };
     } catch {
@@ -338,9 +338,10 @@ class SupabaseService {
           mcq_id: mcqId,
           position: index + 1,
           marks: 1, // Defaulting marks here for simplicity
-          negative_marks: test.negative_marking ? 0.25 : 0
+          negative_marks: test.negative_marking ? 0.25 : 0,
         }));
-        await supabase.from("test_questions").insert(tqInserts).catch(console.error);
+        const { error: tqError } = await supabase.from("test_questions").insert(tqInserts);
+        if (tqError) console.error("Supabase test_questions insert error:", tqError);
       }
       
       return true;

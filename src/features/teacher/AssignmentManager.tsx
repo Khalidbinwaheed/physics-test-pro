@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 
 interface AssignmentManagerProps {
-  preselectedTestId?: string;
+  preselectedTestId?: string | undefined;
 }
 
 export function AssignmentManager({ preselectedTestId }: AssignmentManagerProps) {

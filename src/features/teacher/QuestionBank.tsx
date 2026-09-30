@@ -134,7 +134,7 @@ export function QuestionBank() {
   const openEditModal = (m: MCQItem) => {
     setEditingMCQ(m);
     setFormData({
-      chapter_id: m.chapter_id,
+      chapter_id: m.chapter_id || "",
       topic_id: m.topic_id || "",
       question: m.question,
       option_a: m.option_a,

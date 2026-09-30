@@ -167,6 +167,7 @@ export function ExamInterface({ attemptId, studentId, onSubmitted, onExit }: Exa
   }
 
   const currentQ = attempt.questions[currentIndex];
+  if (!currentQ) return null;
   const totalQuestions = attempt.questions.length;
   const answeredCount = Object.values(selectedAnswers).filter(Boolean).length;
   const unansweredCount = totalQuestions - answeredCount;

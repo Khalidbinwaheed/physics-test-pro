@@ -101,7 +101,7 @@ export function TestBuilder({ onAssignTest }: TestBuilderProps) {
       show_correct_answers: t.show_correct_answers,
       show_explanations: t.show_explanations,
       status: t.status,
-      question_ids: t.questions.map((q) => q.mcq_id),
+      question_ids: t.question_ids || [],
     });
     setShowModal(true);
   };

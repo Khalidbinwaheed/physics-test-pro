@@ -7,8 +7,8 @@ export interface StudentProfile {
   email: string | null;
   phone: string | null;
   class_id: string | null;
-  class_name?: string;
-  section?: string;
+  class_name?: string | undefined;
+  section?: string | undefined;
   roll_number: string | null;
   status: "active" | "disabled" | "archived";
   force_password_change: boolean;
@@ -20,7 +20,7 @@ export interface ClassItem {
   name: string;
   section: string;
   status: "active" | "disabled" | "archived";
-  student_count?: number;
+  student_count?: number | undefined;
   created_at: string;
 }
 
@@ -31,8 +31,8 @@ export interface ChapterItem {
   description: string | null;
   status: "active" | "draft" | "archived";
   display_order: number;
-  topic_count?: number;
-  mcq_count?: number;
+  topic_count?: number | undefined;
+  mcq_count?: number | undefined;
   created_at: string;
 }
 
@@ -47,9 +47,9 @@ export interface TopicItem {
 export interface MCQItem {
   id: string;
   chapter_id: string | null;
-  chapter_name?: string;
+  chapter_name?: string | undefined;
   topic_id: string | null;
-  topic_name?: string;
+  topic_name?: string | undefined;
   question: string;
   option_a: string;
   option_b: string;
@@ -71,7 +71,7 @@ export interface TestItem {
   title: string;
   description: string | null;
   chapter_id: string | null;
-  chapter_name?: string;
+  chapter_name?: string | undefined;
   duration_minutes: number;
   passing_percentage: number;
   negative_marking: boolean;
@@ -93,10 +93,10 @@ export interface TestItem {
 export interface TestAssignmentItem {
   id: string;
   test_id: string;
-  test_title?: string;
+  test_title?: string | undefined;
   student_id: string;
-  student_login_id?: string;
-  student_name?: string;
+  student_login_id?: string | undefined;
+  student_name?: string | undefined;
   assigned_at: string;
   available_from: string | null;
   available_until: string | null;
@@ -140,7 +140,7 @@ export interface AttemptFrozenQuestion {
   difficulty: "easy" | "medium" | "hard";
   marks: number;
   negative_marks: number;
-  chapter_name?: string;
+  chapter_name?: string | undefined;
 }
 
 export interface ResultItem {
@@ -151,7 +151,7 @@ export interface ResultItem {
   student_id: string;
   student_name: string;
   student_login_id: string;
-  chapter_name?: string;
+  chapter_name?: string | undefined;
   total_questions: number;
   correct_count: number;
   incorrect_count: number;
