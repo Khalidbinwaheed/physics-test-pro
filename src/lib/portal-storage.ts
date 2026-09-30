@@ -200,7 +200,7 @@ class PortalStorage {
     meta?: Record<string, unknown>;
   }) {
     const item: AuditLogItem = {
-      id: "aud-" + Math.random().toString(36).slice(2, 9),
+      id: crypto.randomUUID(),
       user_id: log.userId ?? null,
       actor_label: log.actorLabel ?? "System",
       action: log.action,
@@ -386,7 +386,7 @@ class PortalStorage {
     const cls = this.classes.find((c) => c.id === data.class_id);
 
     const newStudent: StudentProfile & { passwordHash: string } = {
-      id: "stu-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       login_id: data.login_id.trim().toUpperCase(),
       full_name: data.full_name.trim(),
       email: data.email?.trim() || studentEmailFor(data.login_id),
@@ -443,7 +443,7 @@ class PortalStorage {
     }
 
     const newTeacher: TeacherUser = {
-      id: "tea-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       email: cleanEmail,
       full_name: data.full_name.trim(),
       role: "teacher",
@@ -579,7 +579,7 @@ class PortalStorage {
 
   createClass(name: string, section = "A") {
     const item: ClassItem = {
-      id: "cls-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       name: name.trim(),
       section: section.trim().toUpperCase(),
       status: "active",
@@ -608,7 +608,7 @@ class PortalStorage {
 
   createChapter(data: { name: string; chapter_number: number; description?: string; display_order?: number }) {
     const item: ChapterItem = {
-      id: "ch-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       name: data.name.trim(),
       chapter_number: data.chapter_number,
       description: data.description?.trim() || null,
@@ -649,7 +649,7 @@ class PortalStorage {
 
   createTopic(chapterId: string, name: string) {
     const item: TopicItem = {
-      id: "top-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       chapter_id: chapterId,
       name: name.trim(),
       status: "active",
@@ -696,7 +696,7 @@ class PortalStorage {
     const top = this.topics.find((t) => t.id === data.topic_id);
     const item: MCQItem = {
       ...data,
-      id: "mcq-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       chapter_name: ch?.name,
       topic_name: top?.name,
       version: 1,
@@ -802,7 +802,7 @@ class PortalStorage {
 
       const diff = (row.difficulty?.toLowerCase() as "easy" | "medium" | "hard") || "medium";
       const mcq: MCQItem = {
-        id: "mcq-" + Math.random().toString(36).substring(2, 9),
+        id: crypto.randomUUID(),
         chapter_id: ch.id,
         chapter_name: ch.name,
         topic_id: null,
@@ -872,7 +872,7 @@ class PortalStorage {
 
     const test: TestItem = {
       ...data,
-      id: "test-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       chapter_name: ch?.name,
       total_marks: totalMarks,
       question_count: data.question_ids.length,
@@ -940,7 +940,7 @@ class PortalStorage {
       if (existing) return;
 
       const asg: TestAssignmentItem = {
-        id: "asg-" + Math.random().toString(36).substring(2, 9),
+        id: crypto.randomUUID(),
         test_id: test.id,
         test_title: test.title,
         student_id: stu.id,
@@ -1084,7 +1084,7 @@ class PortalStorage {
       }
 
       return {
-        tqId: "tq-" + index + "-" + Math.random().toString(36).substring(2, 6),
+        tqId: crypto.randomUUID(),
         mcqId: m.id,
         version: m.version,
         question: m.question,
@@ -1104,7 +1104,7 @@ class PortalStorage {
     const expiresAt = new Date(now.getTime() + test.duration_minutes * 60 * 1000).toISOString();
 
     const attempt: AttemptItem = {
-      id: "att-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       test_id: test.id,
       test_title: test.title,
       student_id: stu.id,
@@ -1210,7 +1210,7 @@ class PortalStorage {
     const timeTakenSeconds = Math.max(1, Math.round((submitTime - startTime) / 1000));
 
     const result: ResultItem = {
-      id: "res-" + Math.random().toString(36).substring(2, 9),
+      id: crypto.randomUUID(),
       attempt_id: att.id,
       test_id: att.test_id,
       test_title: att.test_title,
