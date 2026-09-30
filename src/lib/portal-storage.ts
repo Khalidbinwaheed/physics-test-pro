@@ -123,11 +123,15 @@ class PortalStorage {
       if (sbMCQs.length > 0) this.mcqs = sbMCQs;
       if (sbTests.length > 0) this.tests = sbTests;
       if (sbStudents.length > 0) {
-        const existingMap = new Map(this.students.map((s) => [s.id, s.passwordHash]));
-        this.students = sbStudents.map((s) => ({
-          ...s,
-          passwordHash: existingMap.get(s.id) || "StudentPass123!",
-        }));
+        const existingMap = new Map(this.students.map((s) => [s.id, s]));
+        sbStudents.forEach((s) => {
+          const local = existingMap.get(s.id);
+          existingMap.set(s.id, {
+            ...s,
+            passwordHash: local ? local.passwordHash : "StudentPass123!",
+          });
+        });
+        this.students = Array.from(existingMap.values());
       }
       this.persist();
     } catch {
@@ -312,6 +316,9 @@ class PortalStorage {
     }
     stu.passwordHash = newPass;
     stu.force_password_change = false;
+    this.persist();
+    supabaseService.updateStudent(stu.id, { force_password_change: false }).catch(() => {});
+    
     this.audit({
       userId: stu.id,
       actorLabel: `Student: ${stu.full_name}`,
@@ -406,6 +413,9 @@ class PortalStorage {
       resourceId: newStudent.id,
       meta: { login_id: newStudent.login_id, name: newStudent.full_name },
     });
+
+    this.persist();
+    supabaseService.insertStudent(newStudent).catch(() => {});
 
     const { passwordHash: _, ...profile } = newStudent;
     return { student: profile, temporaryPassword };
@@ -504,6 +514,15 @@ class PortalStorage {
       resourceId: id,
     });
 
+    this.persist();
+    supabaseService.updateStudent(id, {
+      full_name: stu.full_name,
+      class_id: stu.class_id,
+      roll_number: stu.roll_number,
+      phone: stu.phone,
+      email: stu.email
+    }).catch(() => {});
+
     const { passwordHash: _, ...profile } = stu;
     return profile;
   }
@@ -518,6 +537,9 @@ class PortalStorage {
       resource: "students",
       resourceId: id,
     });
+    this.persist();
+    supabaseService.updateStudent(id, { status }).catch(() => {});
+    
     const { passwordHash: _, ...profile } = stu;
     return profile;
   }
@@ -540,6 +562,9 @@ class PortalStorage {
       resourceId: id,
       meta: { student_login_id: stu.login_id },
     });
+
+    this.persist();
+    supabaseService.updateStudent(id, { force_password_change: true }).catch(() => {});
 
     return temporaryPassword;
   }

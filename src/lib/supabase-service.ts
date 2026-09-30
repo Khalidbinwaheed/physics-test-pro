@@ -335,6 +335,35 @@ class SupabaseService {
     }
   }
 
+  async insertStudent(profile: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("profiles").insert({
+        id: profile.id,
+        login_id: profile.login_id,
+        full_name: profile.full_name,
+        email: profile.email,
+        phone: profile.phone,
+        class_id: profile.class_id,
+        roll_number: profile.roll_number,
+        status: profile.status,
+        force_password_change: profile.force_password_change,
+        role: "student",
+      });
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
+  async updateStudent(id: string, updates: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("profiles").update(updates).eq("id", id);
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
   // --- AUDIT LOGS ---
   async logAudit(log: {
     userId?: string;
