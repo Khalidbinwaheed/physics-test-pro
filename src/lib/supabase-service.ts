@@ -306,6 +306,38 @@ class SupabaseService {
     }
   }
 
+  async insertTest(test: TestItem): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("tests").insert({
+        id: test.id,
+        title: test.title,
+        description: test.description,
+        chapter_id: test.chapter_id,
+        duration_minutes: test.duration_minutes,
+        passing_percentage: test.passing_percentage,
+        negative_marking: test.negative_marking,
+        starts_at: test.starts_at,
+        ends_at: test.ends_at,
+        max_attempts: test.max_attempts,
+        randomize_questions: test.randomize_questions,
+        randomize_options: test.randomize_options,
+        show_result: test.show_result,
+        show_correct_answers: test.show_correct_answers,
+        show_explanations: test.show_explanations,
+        status: test.status,
+      });
+
+      if (error) {
+        console.error("Supabase insertTest error:", error);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.error("Supabase insertTest catch error:", e);
+      return false;
+    }
+  }
+
   // --- ASSIGNMENTS ---
   async getAssignments(): Promise<TestAssignmentItem[]> {
     try {
@@ -394,8 +426,10 @@ class SupabaseService {
         submitted_at: attempt.submitted_at,
         questions: attempt.questions,
       });
+      if (error) console.error("Supabase insertAttempt error:", error);
       return !error;
-    } catch {
+    } catch (e) {
+      console.error("Supabase insertAttempt catch:", e);
       return false;
     }
   }
@@ -403,8 +437,10 @@ class SupabaseService {
   async updateAttempt(attemptId: string, updates: any): Promise<boolean> {
     try {
       const { error } = await supabase.from("attempts").update(updates).eq("id", attemptId);
+      if (error) console.error("Supabase updateAttempt error:", error);
       return !error;
-    } catch {
+    } catch (e) {
+      console.error("Supabase updateAttempt catch:", e);
       return false;
     }
   }
@@ -459,8 +495,10 @@ class SupabaseService {
         attempt_number: result.attempt_number,
         submitted_at: result.submitted_at,
       });
+      if (error) console.error("Supabase insertResult error:", error);
       return !error;
-    } catch {
+    } catch (e) {
+      console.error("Supabase insertResult catch:", e);
       return false;
     }
   }

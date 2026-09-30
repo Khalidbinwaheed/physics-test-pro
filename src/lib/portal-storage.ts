@@ -894,6 +894,11 @@ class PortalStorage {
       resourceId: test.id,
       meta: { title: test.title, questions: test.question_count },
     });
+    
+    this.persist();
+    // Sync to backend, ignoring failures for now (since we assume an optimistic UI in this mockup)
+    supabaseService.insertTest(test).catch(() => {});
+    
     return test;
   }
 
