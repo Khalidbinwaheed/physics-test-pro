@@ -108,13 +108,14 @@ class PortalStorage {
       const isConnected = await supabaseService.testConnection();
       if (!isConnected) return;
 
-      const [sbClasses, sbChapters, sbTopics, sbMCQs, sbTests, sbStudents] = await Promise.all([
+      const [sbClasses, sbChapters, sbTopics, sbMCQs, sbTests, sbStudents, sbAssignments] = await Promise.all([
         supabaseService.getClasses(),
         supabaseService.getChapters(),
         supabaseService.getTopics(),
         supabaseService.getMCQs(),
         supabaseService.getTests(),
         supabaseService.getStudents(),
+        supabaseService.getAssignments(),
       ]);
 
       if (sbClasses.length > 0) this.classes = sbClasses;
@@ -122,6 +123,7 @@ class PortalStorage {
       if (sbTopics.length > 0) this.topics = sbTopics;
       if (sbMCQs.length > 0) this.mcqs = sbMCQs;
       if (sbTests.length > 0) this.tests = sbTests;
+      if (sbAssignments.length > 0) this.assignments = sbAssignments;
       if (sbStudents.length > 0) {
         const existingMap = new Map(this.students.map((s) => [s.id, s]));
         sbStudents.forEach((s) => {
@@ -963,6 +965,9 @@ class PortalStorage {
       resourceId: test.id,
       meta: { assignedCount: created.length },
     });
+
+    this.persist();
+    created.forEach((asg) => supabaseService.insertAssignment(asg).catch(() => {}));
 
     return { count: created.length, assignments: created };
   }

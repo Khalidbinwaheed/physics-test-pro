@@ -306,6 +306,50 @@ class SupabaseService {
     }
   }
 
+  // --- ASSIGNMENTS ---
+  async getAssignments(): Promise<TestAssignmentItem[]> {
+    try {
+      const { data, error } = await supabase
+        .from("test_assignments")
+        .select("*, tests(title), profiles(login_id, full_name)");
+
+      if (error || !data) return [];
+      return data.map((d: any) => ({
+        id: d.id,
+        test_id: d.test_id,
+        test_title: d.tests?.title,
+        student_id: d.student_id,
+        student_login_id: d.profiles?.login_id,
+        student_name: d.profiles?.full_name,
+        assigned_at: d.assigned_at,
+        available_from: d.available_from,
+        available_until: d.available_until,
+        max_attempts: d.max_attempts,
+        status: d.status as "assigned" | "in_progress" | "completed" | "expired",
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async insertAssignment(assignment: any): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("test_assignments").insert({
+        id: assignment.id,
+        test_id: assignment.test_id,
+        student_id: assignment.student_id,
+        assigned_at: assignment.assigned_at,
+        available_from: assignment.available_from,
+        available_until: assignment.available_until,
+        max_attempts: assignment.max_attempts,
+        status: assignment.status,
+      });
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
   // --- PROFILES / STUDENTS ---
   async getStudents(): Promise<StudentProfile[]> {
     try {
