@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../auth/auth-context";
 import { ThemeSegmentedControl } from "@/lib/theme";
-import { User, KeyRound, Lock, CheckCircle2, AlertCircle, Palette } from "lucide-react";
+import { User, KeyRound, Lock, CheckCircle2, AlertCircle, Palette, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export function StudentProfileView() {
@@ -11,6 +11,9 @@ export function StudentProfileView() {
   const [confirmPass, setConfirmPass] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showCurrentPass, setShowCurrentPass] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
 
   if (!student) return null;
 
@@ -140,13 +143,20 @@ export function StudentProfileView() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showCurrentPass ? "text" : "password"}
                 required
                 value={currentPass}
                 onChange={(e) => setCurrentPass(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowCurrentPass(!showCurrentPass)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showCurrentPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -159,14 +169,21 @@ export function StudentProfileView() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showNewPass ? "text" : "password"}
                 required
                 minLength={6}
                 value={newPass}
                 onChange={(e) => setNewPass(e.target.value)}
                 placeholder="At least 6 characters"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPass(!showNewPass)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -179,14 +196,21 @@ export function StudentProfileView() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showConfirmPass ? "text" : "password"}
                 required
                 minLength={6}
                 value={confirmPass}
                 onChange={(e) => setConfirmPass(e.target.value)}
                 placeholder="Re-enter new password"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPass(!showConfirmPass)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 

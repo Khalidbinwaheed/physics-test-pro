@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "./auth-context";
-import { KeyRound, Lock, AlertCircle, CheckCircle } from "lucide-react";
+import { KeyRound, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 export function ForcePasswordChangeModal() {
@@ -10,6 +10,10 @@ export function ForcePasswordChangeModal() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   if (!student || !student.force_password_change) {
     return null;
@@ -73,13 +77,20 @@ export function ForcePasswordChangeModal() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showOldPassword ? "text" : "password"}
                 required
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
                 placeholder="Enter temporary password"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showOldPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -92,14 +103,21 @@ export function ForcePasswordChangeModal() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 required
                 minLength={6}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="At least 6 characters"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -112,14 +130,21 @@ export function ForcePasswordChangeModal() {
                 <Lock className="w-4 h-4" />
               </div>
               <input
-                type="password"
+                type={showConfirmPassword ? "text" : "password"}
                 required
                 minLength={6}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter new password"
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/40 text-sm font-mono"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 

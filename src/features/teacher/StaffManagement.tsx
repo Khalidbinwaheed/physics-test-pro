@@ -13,6 +13,8 @@ import {
   AlertTriangle,
   Sparkles,
   ShieldAlert,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +27,7 @@ export function StaffManagement() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const refreshList = () => {
     setStaffList(portalStorage.getStaffUsers());
@@ -289,12 +292,19 @@ export function StaffManagement() {
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-3 w-4 h-4 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     placeholder="Defaults to TeacherPass123!"
-                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
+                    className="w-full pl-10 pr-10 py-2.5 rounded-xl neu-inset text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 font-mono"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
