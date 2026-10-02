@@ -11,14 +11,8 @@ import {
   ResultItem,
   AuditLogItem,
 } from "./portal-types";
-import {
-  INITIAL_CLASSES,
-  INITIAL_STUDENTS,
-  INITIAL_CHAPTERS,
-  INITIAL_TOPICS,
-  INITIAL_MCQS,
-  INITIAL_TESTS,
-} from "./portal-seed-data";
+} from "./portal-types";
+import { normalizeLoginId, studentEmailFor } from "./login-id";
 import { normalizeLoginId, studentEmailFor } from "./login-id";
 import { supabaseService } from "./supabase-service";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,31 +70,25 @@ class PortalStorage {
   private results: ResultItem[] = [];
   private auditLogs: AuditLogItem[] = [];
   private initialized = false;
+  private listeners: (() => void)[] = [];
 
   constructor() {
     this.init();
   }
 
+  subscribe(listener: () => void) {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  private notify() {
+    this.listeners.forEach(l => l());
+  }
+
   private persist() {
-    if (typeof window === "undefined" || !window.localStorage) return;
-    try {
-      const data = {
-        classes: this.classes,
-        students: this.students,
-        chapters: this.chapters,
-        topics: this.topics,
-        mcqs: this.mcqs,
-        mcqVersions: this.mcqVersions,
-        tests: this.tests,
-        assignments: this.assignments,
-        attempts: this.attempts,
-        results: this.results,
-        auditLogs: this.auditLogs,
-      };
-      localStorage.setItem("physics_portal_state_v2", JSON.stringify(data));
-    } catch {
-      // Ignore storage quota errors
-    }
+    this.notify();
   }
 
   private async syncWithSupabase() {
@@ -150,49 +138,17 @@ class PortalStorage {
   private init() {
     if (this.initialized) return;
 
-    if (typeof window !== "undefined" && window.localStorage) {
-      try {
-        const saved = localStorage.getItem("physics_portal_state_v2");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          this.classes = parsed.classes || [];
-          this.students = parsed.students || [];
-          this.chapters = parsed.chapters || [];
-          this.topics = parsed.topics || [];
-          this.mcqs = parsed.mcqs || [];
-          this.mcqVersions = parsed.mcqVersions || {};
-          this.tests = parsed.tests || [];
-          this.assignments = parsed.assignments || [];
-          this.attempts = parsed.attempts || [];
-          this.results = parsed.results || [];
-          this.auditLogs = parsed.auditLogs || [];
-          this.initialized = true;
-          this.syncWithSupabase();
-          return;
-        }
-      } catch {
-        // Fallback to initial empty collections
-      }
-    }
-
-    this.classes = [...INITIAL_CLASSES];
-    this.students = [...INITIAL_STUDENTS];
-    this.chapters = [...INITIAL_CHAPTERS];
-    this.topics = [...INITIAL_TOPICS];
-    this.mcqs = [...INITIAL_MCQS];
-    this.tests = [...INITIAL_TESTS];
-    this.assignments = [...INITIAL_ASSIGNMENTS];
-
-    // Seed initial mcq versions
-    this.mcqs.forEach((m) => {
-      this.mcqVersions[m.id] = [{ ...m }];
-    });
-
-    this.audit({
-      action: "system_init",
-      resource: "system",
-      meta: { message: "Physics Examination Portal initialized" },
-    });
+    this.classes = [];
+    this.students = [];
+    this.chapters = [];
+    this.topics = [];
+    this.mcqs = [];
+    this.tests = [];
+    this.assignments = [];
+    this.attempts = [];
+    this.results = [];
+    this.auditLogs = [];
+    this.mcqVersions = {};
 
     this.initialized = true;
     this.syncWithSupabase();
@@ -231,7 +187,8 @@ class PortalStorage {
   }
 
   // --- AUTHENTICATION ---
-  authenticateTeacher(emailOrUsername: string, pass: string): { success: boolean; user?: TeacherUser; error?: string } {
+  async authenticateTeacher(emailOrUsername: string, pass: string): Promise<{ success: boolean; user?: TeacherUser; error?: string }> {
+    await this.syncWithSupabase();
     const clean = emailOrUsername.trim().toLowerCase();
 
     const matched = this.staffUsers.find((s) => {
@@ -264,7 +221,8 @@ class PortalStorage {
     return { success: false, error: "Invalid email/username or password." };
   }
 
-  authenticateStudent(loginId: string, pass: string): { success: boolean; student?: StudentProfile; error?: string } {
+  async authenticateStudent(loginId: string, pass: string): Promise<{ success: boolean; student?: StudentProfile; error?: string }> {
+    await this.syncWithSupabase();
     const normalized = normalizeLoginId(loginId);
     const stu = this.students.find((s) => normalizeLoginId(s.login_id) === normalized);
 

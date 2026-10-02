@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loginTeacher = async (emailOrUsername: string, pass: string) => {
-    const res = portalStorage.authenticateTeacher(emailOrUsername, pass);
+    const res = await portalStorage.authenticateTeacher(emailOrUsername, pass);
     if (res.success && res.user) {
       setRole(res.user.role);
       setTeacher(res.user);
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginStudent = async (loginId: string, pass: string) => {
-    const res = portalStorage.authenticateStudent(loginId, pass);
+    const res = await portalStorage.authenticateStudent(loginId, pass);
     if (res.success && res.student) {
       setRole("student");
       setStudent(res.student);
