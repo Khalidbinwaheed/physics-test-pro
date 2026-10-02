@@ -99,7 +99,7 @@ export function StudentManagement() {
     );
   };
 
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canAddStudent) {
       toast.error("Privacy Restriction: Only administrators and super administrators have permission to register students.");
@@ -118,7 +118,7 @@ export function StudentManagement() {
       if (teacher?.role) {
         params.actorRole = teacher.role;
       }
-      const res = portalStorage.createStudent(params);
+      const res = await portalStorage.createStudent(params);
       toast.success(`Student ${res.student.login_id} created successfully!`);
       setShowCreateModal(false);
       setFormData({

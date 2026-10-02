@@ -307,7 +307,7 @@ class PortalStorage {
     return profile;
   }
 
-  createStudent(data: {
+  async createStudent(data: {
     login_id: string;
     full_name: string;
     class_id?: string | null;
@@ -315,7 +315,7 @@ class PortalStorage {
     email?: string | null;
     phone?: string | null;
     actorRole?: "super_admin" | "admin" | "teacher";
-  }): { student: StudentProfile; temporaryPassword: string } {
+  }): Promise<{ student: StudentProfile; temporaryPassword: string }> {
     const role = data.actorRole || this.teacher.role;
     if (role !== "admin" && role !== "super_admin") {
       throw new Error("Access Denied: Only administrators and super administrators have permission to add students.");
@@ -351,6 +351,11 @@ class PortalStorage {
       passwordHash: temporaryPassword,
     };
 
+    const success = await supabaseService.insertStudent(newStudent);
+    if (!success) {
+      throw new Error("Failed to save student to database. Please check your connection.");
+    }
+
     this.students.unshift(newStudent);
 
     // Update class student count
@@ -365,7 +370,6 @@ class PortalStorage {
     });
 
     this.persist();
-    supabaseService.insertStudent(newStudent).catch(() => {});
 
     const { passwordHash: _, ...profile } = newStudent;
     return { student: profile, temporaryPassword };
