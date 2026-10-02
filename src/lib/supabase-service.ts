@@ -540,6 +540,7 @@ class SupabaseService {
         roll_number: d.roll_number,
         status: d.status as "active" | "disabled" | "archived",
         force_password_change: d.force_password_change,
+        password_hash: d.password_hash,
         created_at: d.created_at,
       }));
     } catch {
@@ -559,6 +560,7 @@ class SupabaseService {
         roll_number: profile.roll_number,
         status: profile.status,
         force_password_change: profile.force_password_change,
+        password_hash: profile.passwordHash,
         role: "student",
       });
       return !error;
@@ -569,7 +571,12 @@ class SupabaseService {
 
   async updateStudent(id: string, updates: any): Promise<boolean> {
     try {
-      const { error } = await supabase.from("profiles").update(updates).eq("id", id);
+      const dbUpdates = { ...updates };
+      if (dbUpdates.passwordHash) {
+        dbUpdates.password_hash = dbUpdates.passwordHash;
+        delete dbUpdates.passwordHash;
+      }
+      const { error } = await supabase.from("profiles").update(dbUpdates).eq("id", id);
       return !error;
     } catch {
       return false;
