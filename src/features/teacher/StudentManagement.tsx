@@ -9,6 +9,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Archive,
+  Trash2,
   Copy,
   Check,
   User,
@@ -186,6 +187,19 @@ export function StudentManagement() {
       refreshStudents();
     } catch (err: any) {
       toast.error(err.message || "Failed to archive student.");
+    }
+  };
+
+  const handleDelete = (student: StudentProfile) => {
+    if (!window.confirm(`Permanently delete student ${student.full_name}? This action cannot be undone.`)) {
+      return;
+    }
+    try {
+      portalStorage.deleteStudent(student.id);
+      toast.success("Student permanently deleted.");
+      refreshStudents();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete student.");
     }
   };
 
@@ -403,6 +417,14 @@ export function StudentManagement() {
                             <Archive className="w-4 h-4" />
                           </button>
                         )}
+
+                        <button
+                          onClick={() => handleDelete(stu)}
+                          title="Delete Student"
+                          className="p-2 neu-btn rounded-xl text-muted-foreground hover:text-red-500 cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

@@ -577,6 +577,28 @@ class PortalStorage {
     return temporaryPassword;
   }
 
+  deleteStudent(id: string): void {
+    const stuIndex = this.students.findIndex((s) => s.id === id);
+    if (stuIndex === -1) throw new Error("Student not found.");
+    
+    const stu = this.students[stuIndex];
+
+    this.audit({
+      actorLabel: `Teacher: ${this.teacher.full_name}`,
+      action: "student_deleted",
+      resource: "students",
+      resourceId: id,
+      meta: { student_login_id: stu.login_id },
+    });
+
+    // Remove from local array
+    this.students.splice(stuIndex, 1);
+    this.persist();
+
+    // Remove from Supabase
+    supabaseService.deleteStudent(id).catch(() => {});
+  }
+
   // --- CLASSES ---
   getClasses() {
     return this.classes.map((c) => ({

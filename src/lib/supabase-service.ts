@@ -583,6 +583,15 @@ class SupabaseService {
     }
   }
 
+  async deleteStudent(id: string): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("profiles").delete().eq("id", id);
+      return !error;
+    } catch {
+      return false;
+    }
+  }
+
   // --- AUDIT LOGS ---
   async logAudit(log: {
     userId?: string;
