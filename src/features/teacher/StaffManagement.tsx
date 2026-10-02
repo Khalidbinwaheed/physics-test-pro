@@ -41,12 +41,15 @@ export function StaffManagement() {
     }
 
     try {
-      const created = portalStorage.createTeacher({
+      const params: Parameters<typeof portalStorage.createTeacher>[0] = {
         full_name: formData.full_name,
         email: formData.email,
         password: formData.password || "TeacherPass123!",
-        actorRole: teacher?.role,
-      });
+      };
+      if (teacher?.role) {
+        params.actorRole = teacher.role;
+      }
+      const created = portalStorage.createTeacher(params);
 
       toast.success(`Teacher ${created.full_name} registered successfully!`);
       setShowAddModal(false);

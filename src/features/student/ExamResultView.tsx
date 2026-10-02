@@ -115,12 +115,15 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
               const studentChoice = attempt.answers[q.tqId];
               const isCorrect = studentChoice === q.correct_answer;
               const isUnanswered = !studentChoice;
+              const hasCorrectAnswerData = !!q.correct_answer;
 
               return (
                 <div
                   key={q.tqId}
                   className={`p-6 rounded-2xl space-y-4 transition-all ${
-                    isCorrect
+                    !hasCorrectAnswerData
+                      ? "neu-raised"
+                      : isCorrect
                       ? "neu-raised border border-emerald-500/40"
                       : isUnanswered
                       ? "neu-raised"
@@ -130,17 +133,20 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
                   <div className="flex items-center justify-between text-xs font-mono">
                     <span className="font-bold text-foreground">Question {idx + 1}</span>
                     <div>
-                      {isCorrect && (
+                      {hasCorrectAnswerData && isCorrect && (
                         <span className="text-emerald-500 font-bold flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Correct (+{q.marks} pts)
                         </span>
                       )}
-                      {!isCorrect && !isUnanswered && (
+                      {hasCorrectAnswerData && !isCorrect && !isUnanswered && (
                         <span className="text-destructive font-bold flex items-center gap-1">
                           <XCircle className="w-3.5 h-3.5" /> Incorrect
                         </span>
                       )}
                       {isUnanswered && <span className="text-muted-foreground">Unanswered</span>}
+                      {!hasCorrectAnswerData && !isUnanswered && (
+                        <span className="text-primary font-bold">Answer Submitted</span>
+                      )}
                     </div>
                   </div>
 
@@ -157,10 +163,14 @@ export function ExamResultView({ result, onReturn }: ExamResultViewProps) {
                       const isCorrectAnswer = q.correct_answer === opt;
 
                       let style = "neu-inset text-muted-foreground";
-                      if (isCorrectAnswer) {
+                      if (hasCorrectAnswerData && isCorrectAnswer) {
                         style = "neu-raised text-emerald-600 dark:text-emerald-400 border border-emerald-500/50 font-semibold";
                       } else if (isStudentChoice) {
-                        style = "neu-inset text-destructive border border-destructive/50 font-semibold";
+                        if (hasCorrectAnswerData) {
+                          style = "neu-inset text-destructive border border-destructive/50 font-semibold";
+                        } else {
+                          style = "neu-inset text-primary border border-primary/50 font-semibold";
+                        }
                       }
 
                       return (

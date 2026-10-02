@@ -646,7 +646,7 @@ class PortalStorage {
       description: item.description,
       status: item.status,
       display_order: item.display_order
-    }).catch(() => {});
+    }).then(undefined, () => {});
 
     return item;
   }
@@ -695,7 +695,7 @@ class PortalStorage {
       chapter_id: item.chapter_id,
       name: item.name,
       status: item.status
-    }).catch(() => {});
+    }).then(undefined, () => {});
 
     return item;
   }
@@ -770,7 +770,7 @@ class PortalStorage {
       negative_marks: item.negative_marks,
       status: item.status,
       version: item.version
-    }).catch(() => {});
+    }).then(undefined, () => {});
 
     return item;
   }
@@ -859,6 +859,11 @@ class PortalStorage {
       let ch = this.chapters.find((c) => c.name.toLowerCase() === chName);
       if (!ch) {
         ch = this.chapters[0]; // fallback to first chapter
+      }
+      if (!ch) {
+        invalid++;
+        errors.push(`Row ${line}: No chapters available in the system.`);
+        return;
       }
 
       const diff = (row.difficulty?.toLowerCase() as "easy" | "medium" | "hard") || "medium";
@@ -1144,10 +1149,10 @@ class PortalStorage {
 
       if (test.randomize_options) {
         const shuffled = this.shuffleArray(opts);
-        finalA = shuffled[0].text;
-        finalB = shuffled[1].text;
-        finalC = shuffled[2].text;
-        finalD = shuffled[3].text;
+        finalA = shuffled[0]?.text || m.option_a;
+        finalB = shuffled[1]?.text || m.option_b;
+        finalC = shuffled[2]?.text || m.option_c;
+        finalD = shuffled[3]?.text || m.option_d;
         const newCorrectIdx = shuffled.findIndex((o) => o.key === m.correct_answer);
         finalCorrect = (["A", "B", "C", "D"][newCorrectIdx] || "A") as "A" | "B" | "C" | "D";
       }
@@ -1341,10 +1346,11 @@ class PortalStorage {
     }
 
     // Mask correct answers and explanations if in progress or forbidden by test config
+    const isTeacher = !studentId;
     const isSubmitted = att.status === "submitted";
     const maskedQuestions = att.questions.map((q) => {
-      const showAnswers = isSubmitted && att.show_correct_answers;
-      const showExp = isSubmitted && att.show_explanations;
+      const showAnswers = isTeacher || (isSubmitted && att.show_correct_answers);
+      const showExp = isTeacher || (isSubmitted && att.show_explanations);
       return {
         ...q,
         correct_answer: showAnswers ? q.correct_answer : ("" as any),
@@ -1409,9 +1415,12 @@ class PortalStorage {
 
     this.results.forEach((r) => {
       const test = this.tests.find((t) => t.id === r.test_id);
-      if (test?.chapter_id && chapterMap[test.chapter_id]) {
-        chapterMap[test.chapter_id].totalPct += r.percentage;
-        chapterMap[test.chapter_id].count += 1;
+      if (test?.chapter_id) {
+        const entry = chapterMap[test.chapter_id];
+        if (entry) {
+          entry.totalPct += r.percentage;
+          entry.count += 1;
+        }
       }
     });
 
@@ -1487,7 +1496,11 @@ class PortalStorage {
     const copy = [...arr];
     for (let i = copy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
+      const temp = copy[j];
+      if (temp !== undefined) {
+        copy[j] = copy[i] as T;
+        copy[i] = temp;
+      }
     }
     return copy;
   }

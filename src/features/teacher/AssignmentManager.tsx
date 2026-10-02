@@ -55,11 +55,13 @@ export function AssignmentManager({ preselectedTestId }: AssignmentManagerProps)
     }
 
     try {
-      const res = portalStorage.assignTest({
-        testId: selectedTestId,
-        studentIds: assignMode === "students" ? selectedStudentIds : undefined,
-        classId: assignMode === "class" ? selectedClassId : undefined,
-      });
+      const params: Parameters<typeof portalStorage.assignTest>[0] = { testId: selectedTestId };
+      if (assignMode === "students") {
+        params.studentIds = selectedStudentIds;
+      } else if (assignMode === "class") {
+        params.classId = selectedClassId;
+      }
+      const res = portalStorage.assignTest(params);
 
       if (res.count === 0) {
         toast.info("Selected student(s) already have this test assigned.");

@@ -111,10 +111,13 @@ export function StudentManagement() {
     }
 
     try {
-      const res = portalStorage.createStudent({
+      const params: Parameters<typeof portalStorage.createStudent>[0] = {
         ...formData,
-        actorRole: teacher?.role,
-      });
+      };
+      if (teacher?.role) {
+        params.actorRole = teacher.role;
+      }
+      const res = portalStorage.createStudent(params);
       toast.success(`Student ${res.student.login_id} created successfully!`);
       setShowCreateModal(false);
       setFormData({
