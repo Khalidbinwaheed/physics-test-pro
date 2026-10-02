@@ -136,7 +136,7 @@ class PortalStorage {
           const local = existingMap.get(s.id);
           existingMap.set(s.id, {
             ...s,
-            passwordHash: local ? local.passwordHash : "StudentPass123!",
+            passwordHash: (s as any).password_hash || (local ? local.passwordHash : "StudentPass123!"),
           });
         });
         this.students = Array.from(existingMap.values());
