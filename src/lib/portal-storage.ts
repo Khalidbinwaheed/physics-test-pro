@@ -11,8 +11,6 @@ import {
   ResultItem,
   AuditLogItem,
 } from "./portal-types";
-} from "./portal-types";
-import { normalizeLoginId, studentEmailFor } from "./login-id";
 import { normalizeLoginId, studentEmailFor } from "./login-id";
 import { supabaseService } from "./supabase-service";
 import { supabase } from "@/integrations/supabase/client";
