@@ -107,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (role !== "student" || !student) {
       return { success: false, error: "Only student passwords can be changed here." };
     }
-    const res = portalStorage.changeStudentPassword(student.id, oldPass, newPass);
+    const res = await portalStorage.changeStudentPassword(student.id, oldPass, newPass);
     if (res.success) {
       const updated = portalStorage.getStudentById(student.id);
       if (updated) {

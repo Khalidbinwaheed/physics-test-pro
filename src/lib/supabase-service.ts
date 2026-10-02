@@ -517,6 +517,64 @@ class SupabaseService {
       return false;
     }
   }
+  // --- AUTHENTICATION ---
+  async authenticateTeacher(login: string, pass: string): Promise<any | null> {
+    try {
+      const clean = login.trim().toLowerCase();
+      // Look for either email or login_id match in staff roles
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("role", ["teacher", "admin", "super_admin"])
+        .or(`email.ilike.${clean},login_id.ilike.${clean}`)
+        .eq("password_hash", pass)
+        .maybeSingle();
+
+      if (error || !data) return null;
+      return {
+        id: data.id,
+        email: data.email || "",
+        full_name: data.full_name,
+        role: data.role,
+        passwordHash: data.password_hash,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  async authenticateStudent(loginId: string, pass: string): Promise<any | null> {
+    try {
+      // Must be an active student matching login_id and exact password_hash
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*, classes(name, section)")
+        .eq("role", "student")
+        .eq("status", "active")
+        .ilike("login_id", loginId.trim())
+        .eq("password_hash", pass)
+        .maybeSingle();
+
+      if (error || !data) return null;
+      return {
+        id: data.id,
+        login_id: data.login_id || "",
+        full_name: data.full_name,
+        email: data.email || "",
+        phone: data.phone || null,
+        class_id: data.class_id,
+        class_name: data.classes?.name,
+        section: data.classes?.section,
+        roll_number: data.roll_number,
+        status: data.status,
+        force_password_change: data.force_password_change,
+        passwordHash: data.password_hash,
+        created_at: data.created_at,
+      };
+    } catch {
+      return null;
+    }
+  }
 
   // --- PROFILES / STUDENTS ---
   async getStudents(): Promise<StudentProfile[]> {

@@ -186,19 +186,9 @@ class PortalStorage {
 
   // --- AUTHENTICATION ---
   async authenticateTeacher(emailOrUsername: string, pass: string): Promise<{ success: boolean; user?: TeacherUser; error?: string }> {
-    await this.syncWithSupabase();
-    const clean = emailOrUsername.trim().toLowerCase();
+    const matched = await supabaseService.authenticateTeacher(emailOrUsername, pass);
 
-    const matched = this.staffUsers.find((s) => {
-      const sEmail = s.email.toLowerCase();
-      if (sEmail === clean) return true;
-      if (s.role === "super_admin" && (clean === "superadmin" || clean === "super_admin" || clean === "superadmin-01")) return true;
-      if (s.role === "admin" && (clean === "admin" || clean === "admin-01")) return true;
-      if (s.role === "teacher" && (clean === "teacher" || clean === "teacher-01")) return true;
-      return false;
-    });
-
-    if (matched && matched.passwordHash === pass) {
+    if (matched) {
       this.teacher = matched;
       this.audit({
         userId: matched.id,
@@ -207,6 +197,8 @@ class PortalStorage {
         resource: "auth",
         meta: { role: matched.role, email: matched.email },
       });
+      // trigger sync in background
+      this.syncWithSupabase();
       return { success: true, user: matched };
     }
 
@@ -220,14 +212,12 @@ class PortalStorage {
   }
 
   async authenticateStudent(loginId: string, pass: string): Promise<{ success: boolean; student?: StudentProfile; error?: string }> {
-    await this.syncWithSupabase();
-    const normalized = normalizeLoginId(loginId);
-    const stu = this.students.find((s) => normalizeLoginId(s.login_id) === normalized);
+    const stu = await supabaseService.authenticateStudent(loginId, pass);
 
     if (!stu) {
       this.audit({
         actorLabel: loginId,
-        action: "student_login_failed_not_found",
+        action: "student_login_failed",
         resource: "auth",
         meta: { loginId },
       });
@@ -235,27 +225,11 @@ class PortalStorage {
     }
 
     if (stu.status === "disabled") {
-      this.audit({
-        userId: stu.id,
-        actorLabel: `Student: ${stu.full_name} (${stu.login_id})`,
-        action: "student_login_rejected_disabled",
-        resource: "auth",
-      });
       return { success: false, error: "Your account is disabled. Please contact your instructor." };
     }
 
     if (stu.status === "archived") {
       return { success: false, error: "This student account has been archived." };
-    }
-
-    if (stu.passwordHash !== pass) {
-      this.audit({
-        userId: stu.id,
-        actorLabel: `Student: ${stu.full_name} (${stu.login_id})`,
-        action: "student_login_failed_password",
-        resource: "auth",
-      });
-      return { success: false, error: "Invalid Student Login ID or password." };
     }
 
     this.audit({
@@ -265,23 +239,35 @@ class PortalStorage {
       resource: "auth",
     });
 
+    // trigger sync in background
+    this.syncWithSupabase();
+    
     const { passwordHash: _, ...profile } = stu;
     return { success: true, student: profile };
   }
 
-  changeStudentPassword(studentId: string, oldPass: string, newPass: string): { success: boolean; error?: string } {
-    const stu = this.students.find((s) => s.id === studentId);
-    if (!stu) return { success: false, error: "Student not found." };
-    if (stu.passwordHash !== oldPass && !stu.force_password_change) {
+  async changeStudentPassword(studentId: string, oldPass: string, newPass: string): Promise<{ success: boolean; error?: string }> {
+    const { data: dbStu } = await supabase.from("profiles").select("*").eq("id", studentId).maybeSingle();
+    if (!dbStu) return { success: false, error: "Student not found." };
+    if (dbStu.password_hash !== oldPass && !dbStu.force_password_change) {
       return { success: false, error: "Current password is incorrect." };
     }
     if (newPass.length < 6) {
       return { success: false, error: "Password must be at least 6 characters long." };
     }
-    stu.passwordHash = newPass;
-    stu.force_password_change = false;
+    
+    const success = await supabaseService.updateStudent(studentId, { passwordHash: newPass, force_password_change: false });
+    if (!success) {
+      return { success: false, error: "Failed to update password in database." };
+    }
+    
+    // update local cache
+    const stu = this.students.find((s) => s.id === studentId);
+    if (stu) {
+      stu.passwordHash = newPass;
+      stu.force_password_change = false;
+    }
     this.persist();
-    supabaseService.updateStudent(stu.id, { force_password_change: false }).catch(() => {});
     
     this.audit({
       userId: stu.id,
