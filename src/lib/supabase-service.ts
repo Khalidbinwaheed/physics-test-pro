@@ -398,15 +398,17 @@ class SupabaseService {
   // --- ATTEMPTS & RESULTS ---
   async getAttempts(): Promise<AttemptItem[]> {
     try {
-      const { data, error } = await supabase.from("attempts").select("*");
+      const { data, error } = await supabase
+        .from("attempts")
+        .select("*, tests(title), profiles(full_name, login_id)");
       if (error || !data) return [];
       return data.map((d: any) => ({
         id: d.id,
         test_id: d.test_id,
-        test_title: "", // We can mock this or fetch it
+        test_title: d.tests?.title || "", 
         student_id: d.student_id,
-        student_name: "",
-        student_login_id: "",
+        student_name: d.profiles?.full_name || "",
+        student_login_id: d.profiles?.login_id || "",
         attempt_number: d.attempt_number,
         status: d.status,
         started_at: d.started_at,
